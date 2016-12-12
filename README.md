@@ -43,10 +43,12 @@ bender.experiment.description
 >>> 'This is a Bender experiment'
 ```
 
-### Automatically load the latest algo used
+### Automatically load the latest algo created
 
 ```python
 bender = Bender(author='benderuser007', experiment=1234, latest_algo=True)
+bender.algo.name
+>>> 'RandomForest'
 bender.trial.new(
   parameters={'n_estimators': 15, 'criterion': 'entropy'}
   results={'accuracy': 0.677}
