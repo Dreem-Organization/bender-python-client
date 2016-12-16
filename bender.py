@@ -28,10 +28,11 @@ class Bender():
         comment='not bad'
     )
     """
-    def __init__(self, author, experiment=None, latest_algo=False):
+    def __init__(self, author, experiment=None, algo=None, latest_algo=False):
         self.author = author
         self.experiment = Experiment(experiment)
-        self.algo = Algo(latest_algo, author=self.author, experiment=self.experiment)
+        self.algo = Algo(author=self.author, experiment=self.experiment, algo=algo,
+                         latest_algo=latest_algo)
         self.trial = Trial(author=self.author, experiment=self.experiment, algo=self.algo)
 
 
@@ -101,22 +102,26 @@ class Experiment():
 
 class Algo():
     """ Algo class for Bender """
-    def __init__(self, experiment, author, latest_algo):
+    def __init__(self, experiment, author, algo, latest_algo):
         self.id = None
         self.name = None
-        self.experiment = experiment.id
+        self.experiment = experiment
+        self.experiment_id = experiment.id
 
-        if latest_algo is True:
-            self.get_lastest_used_algo(experiment.id, author)
+        if algo is not None:
+            self.get(algo)
+
+        elif self.experiment is not None and latest_algo is True:
+            self.get_latest_used_algo(experiment.id, author)
 
     def populate(self, data):
         self.id = data.get('id')
         self.name = data.get('name')
-        self.experiment = data.get('experiment')
+        self.experiment_id = data.get('experiment')
 
-    def get_lastest_used_algo(self, experiment_id, author):
+    def get_latest_used_algo(self, experiment_id, author):
         r = requests.get(
-            url='%s/lastest_algo_for_experiment/%s'
+            url='%s/latest_algo_for_experiment/%s'
             % (BASE_URL, experiment_id)
         )
 
@@ -132,13 +137,13 @@ class Algo():
         """
         data = {'name': name,
                 'parameters': parameters,
-                'experiment': self.experiment}
+                'experiment': self.experiment.id}
 
         r = requests.post(url='%s/algos/' % BASE_URL, json=data)
 
         if r.status_code == 201:
             self.populate(r.json())
-            print('Algo Created')
+            print('Created Algo')
         else:
             print('Could not create Algo')
             print(r.content)
@@ -148,6 +153,7 @@ class Algo():
         r = requests.get(url='%s/algos/%s/' % (BASE_URL, algo_id))
         if r.status_code == 200:
             self.populate(r.json())
+            print('Retrieved Algo')
         else:
             print('Could not retrieve experiment')
             return r.content
