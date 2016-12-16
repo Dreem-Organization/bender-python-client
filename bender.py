@@ -65,15 +65,14 @@ class Experiment():
         if r.status_code == 200:
             self.populate(r.json())
         else:
-            print('Could not retrieve experiment')
-            return r.content
+            raise BenderFailed('Could not retrieve experiment.')
 
     def create(self, name, description, metrics, author, dataset, dataset_parameters):
         """
         Please provide the following:
-        - Name: string
-        - Description: string
-        - Metrics: list of strings
+        - name: string
+        - description: string
+        - metrics: list of strings
         - dataset: string
         - dataset_parameters: dict
         """
@@ -89,11 +88,8 @@ class Experiment():
 
         if r.status_code == 201:
             self.populate(r.json())
-            print('Created experiment "%s" with id:%s' % (self.name, self.id))
-
         else:
-            print('Failed to create experiment.')
-            return r.content
+            raise BenderFailed('Failed to create experiment.')
 
     def __str__(self):
         if self.name is None:
@@ -105,6 +101,7 @@ class Algo():
     def __init__(self, experiment, author, algo, latest_algo):
         self.id = None
         self.name = None
+        self.parameters = None
         self.experiment = experiment
         self.experiment_id = experiment.id
 
@@ -118,6 +115,7 @@ class Algo():
         self.id = data.get('id')
         self.name = data.get('name')
         self.experiment_id = data.get('experiment')
+        self.parameters = data.get('parameters')
 
     def get_latest_used_algo(self, experiment_id, author):
         r = requests.get(
@@ -127,7 +125,6 @@ class Algo():
 
         if r.status_code == 200:
             self.populate(r.json()[0])
-            print('Retrieved last Algo.')
 
     def create(self, name, parameters):
         """
@@ -143,24 +140,20 @@ class Algo():
 
         if r.status_code == 201:
             self.populate(r.json())
-            print('Created Algo')
         else:
-            print('Could not create Algo')
-            print(r.content)
+            raise BenderFailed('Could not create Algo')
 
     def get(self, algo_id):
         """Retrieve algo instance"""
         r = requests.get(url='%s/algos/%s/' % (BASE_URL, algo_id))
         if r.status_code == 200:
             self.populate(r.json())
-            print('Retrieved Algo')
         else:
-            print('Could not retrieve experiment')
-            return r.content
+            raise BenderFailed('Could not retrieve experiment.')
 
     def __str__(self):
         if self.name is None:
-            return 'Please create or get an algorithm.'
+            raise BenderFailed('Please create or get an algorithm.')
         else:
             return self.name
 
@@ -188,12 +181,22 @@ class Trial():
                     'parameters': parameters,
                     'results': results,
                     'comment': comment}
-
             r = requests.post(url='%s/trials/' % BASE_URL, json=data)
             if r.status_code == 201:
                 self.populate(parameters, results, comment)
                 print('Trial successfully send.')
                 return r.json()
             else:
-                print('Could not send trial.')
-                return r.content
+                raise BenderFailed(
+                    "Could not send trial.\nPlease make sure you provided the following:\
+                    \nParameters: %s.\nResults: %s."
+                    % (', '.join(self.algo.parameters), ', '.join(self.experiment.metrics))
+                )
+
+
+class BenderFailed(Exception):
+    def __init__(self, error):
+        self.error = error
+
+    def __str__(self):
+        return self.error
