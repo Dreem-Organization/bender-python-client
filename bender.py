@@ -2,6 +2,8 @@ import requests
 
 CURRENT_EXPERIMENT = None
 BASE_URL = "http://127.0.0.1:8000"
+BASE_URL = 'https://api.rythm.co/v1/dreem/bender'
+TOKEN = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiI2ZDExNTY0YzczM2U0MDhkYTRiYzVlZWYxNjE5NTMxZiIsImV4cCI6MTQ3MTQ2MDE4NiwicGVybWlzc2lvbnMiOiJoZWFkYmFuZD10ZWFtO25vY3Rpcz1hZG1pbjtkcmVlbWVyPXRlYW07Y3VzdG9tZXI9dGVhbTtkYXRhc2V0PXRlYW07bmlnaHRyZXBvcnQ9dGVhbTtkYXRhdXBsb2FkPWFkbWluO2RhdGFzYW1wbGU9dGVhbTthbGdvcnl0aG09dGVhbTtwcm9kdWN0X3Rlc3Rpbmc9dGVhbSJ9.JRDPQVQGZWvd9C6UMNtG2Q0tDxbMgqSk21r6UI8C38w'
 
 
 class Bender():
@@ -61,7 +63,10 @@ class Experiment():
 
     def get(self, experiment_id):
         """Retrieve experiment instance"""
-        r = requests.get(url='%s/experiments/%s/' % (BASE_URL, experiment_id))
+        r = requests.get(
+            url='%s/experiments/%s/' % (BASE_URL, experiment_id),
+            headers={"Authorization": "Bearer {0}".format(TOKEN)}
+            )
         if r.status_code == 200:
             self.populate(r.json())
         else:
@@ -84,11 +89,13 @@ class Experiment():
               'metrics': metrics,
               'dataset': dataset,
               'author': author,
-              'dataset_parameters': dataset_parameters})
+              'dataset_parameters': dataset_parameters},
+            headers={"Authorization": "Bearer {0}".format(TOKEN)})
 
         if r.status_code == 201:
             self.populate(r.json())
         else:
+            print(r.text)
             raise BenderFailed('Failed to create experiment.')
 
     def __str__(self):
@@ -119,12 +126,15 @@ class Algo():
 
     def get_latest_used_algo(self, experiment_id, author):
         r = requests.get(
-            url='%s/latest_algo_for_experiment/%s'
-            % (BASE_URL, experiment_id)
+            url='%s/latest_algo_for_experiment/%s/'
+            % (BASE_URL, experiment_id),
+            headers={"Authorization": "Bearer {0}".format(TOKEN)}
         )
 
         if r.status_code == 200:
             self.populate(r.json()[0])
+        else:
+            raise BenderFailed('Could not retrieve latest algo.')
 
     def create(self, name, parameters):
         """
@@ -136,7 +146,8 @@ class Algo():
                 'parameters': parameters,
                 'experiment': self.experiment.id}
 
-        r = requests.post(url='%s/algos/' % BASE_URL, json=data)
+        r = requests.post(url='%s/algos/' % BASE_URL, json=data,
+                          headers={"Authorization": "Bearer {0}".format(TOKEN)})
 
         if r.status_code == 201:
             self.populate(r.json())
@@ -145,7 +156,8 @@ class Algo():
 
     def get(self, algo_id):
         """Retrieve algo instance"""
-        r = requests.get(url='%s/algos/%s/' % (BASE_URL, algo_id))
+        r = requests.get(url='%s/algos/%s/' % (BASE_URL, algo_id),
+                         headers={"Authorization": "Bearer {0}".format(TOKEN)})
         if r.status_code == 200:
             self.populate(r.json())
         else:
@@ -181,7 +193,8 @@ class Trial():
                     'parameters': parameters,
                     'results': results,
                     'comment': comment}
-            r = requests.post(url='%s/trials/' % BASE_URL, json=data)
+            r = requests.post(url='%s/trials/' % BASE_URL, json=data,
+                              headers={"Authorization": "Bearer {0}".format(TOKEN)})
             if r.status_code == 201:
                 self.populate(parameters, results, comment)
                 print('Trial successfully send.')
