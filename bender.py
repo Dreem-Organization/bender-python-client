@@ -179,32 +179,41 @@ class Trial():
         self.parameters = None
         self.results = None
         self.comment = None
+        self.id = None
 
-    def populate(self, parameters, results, comment):
-        self.parameters = parameters
-        self.results = results
-        self.comment = comment
+    def populate(self, data):
+        self.parameters = data.get('parameters')
+        self.results = data.get('results')
+        self.comment = data.get('comment')
+        self.id = data.get('id')
 
     def new(self, parameters, results, comment=None):
         if (self.experiment is not None and self.algo is not None):
-            data = {'experiment': self.experiment.id,
-                    'algo': self.algo.id,
-                    'author': self.author,
-                    'parameters': parameters,
-                    'results': results,
-                    'comment': comment}
-            r = requests.post(url='%s/trials/' % BASE_URL, json=data,
-                              headers={"Authorization": "Bearer {0}".format(TOKEN)})
-            if r.status_code == 201:
-                self.populate(parameters, results, comment)
-                print('Trial successfully send.')
-                return r.json()
-            else:
-                raise BenderFailed(
-                    "Could not send trial.\nPlease make sure you provided the following:\
-                    \nParameters: %s.\nResults: %s."
-                    % (', '.join(self.algo.parameters), ', '.join(self.experiment.metrics))
-                )
+            if (len(set(self.algo.parameters) & set(parameters.keys())) == len(self.algo.parameters)
+                and len(set(self.experiment.metrics) & set(results.keys())) == len(self.experiment.metrics)):
+
+                r = requests.post(
+                    url='%s/trials/' % BASE_URL,
+                    json={'experiment': self.experiment.id,
+                          'algo': self.algo.id,
+                          'author': self.author,
+                          'parameters': parameters,
+                          'results': results,
+                          'comment': comment},
+                    headers={"Authorization": "Bearer {0}".format(TOKEN)}
+                    )
+                if r.status_code == 201:
+                    self.populate(parameters, results, comment)
+                    print('Trial successfully send.')
+                    return r.json()
+
+            raise BenderFailed(
+                "Could not send trial.\nPlease make sure you provided the following:\
+                \nParameters: %s.\nResults: %s."
+                % (', '.join(self.algo.parameters), ', '.join(self.experiment.metrics))
+            )
+        else:
+            raise BenderFailed('You must provide an Experiment and Algo before sending new trials.')
 
 
 class BenderFailed(Exception):
