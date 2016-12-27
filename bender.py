@@ -80,6 +80,7 @@ class Experiment():
         - metrics: list of strings
         - dataset: string
         - dataset_parameters: dict
+        - author: string
         """
         r = requests.post(
             url='%s/experiments/' % (BASE_URL),
@@ -214,7 +215,6 @@ class Trial():
             )
         else:
             raise BenderFailed('You must provide an Experiment and Algo before sending new trials.')
-
 
 class BenderFailed(Exception):
     def __init__(self, error):
