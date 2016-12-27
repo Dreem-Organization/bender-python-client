@@ -1,7 +1,10 @@
+# -*- coding: utf-8 -*-
 import requests
 
 CURRENT_EXPERIMENT = None
 BASE_URL = "http://127.0.0.1:8000"
+
+__all__ = ['Bender']
 
 
 class Bender():
