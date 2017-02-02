@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from bender import Bender
+from .bender import Bender
 
 """
 Bender Python Client

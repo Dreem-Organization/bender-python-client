@@ -2,7 +2,7 @@
 import requests
 
 BASE_URL = 'https://api.rythm.co/v1/dreem/bender'
-TOKEN = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiIyZTExYmRkYmJhMjQ0MjYxYmQzYzA5NDM2MzhhNDVlYSIsImV4cCI6MTQ4MzAxMDM1NywicGVybWlzc2lvbnMiOiJoZWFkYmFuZD1hZG1pbjtub2N0aXM9YWRtaW47ZHJlZW1lcj1hZG1pbjtjdXN0b21lcj1hZG1pbjtkYXRhc2V0PWFkbWluO25pZ2h0cmVwb3J0PWFkbWluO2RhdGF1cGxvYWQ9YWRtaW47ZGF0YXNhbXBsZT1hZG1pbjthbGdvcnl0aG09YWRtaW47cXVhbGl0eT1kcmVlbWVyIn0.1qgUF_ToYjbxYM-IBjcr4y0xRpnXdPFIZurXSobuRRY' 
+TOKEN = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiIyZTExYmRkYmJhMjQ0MjYxYmQzYzA5NDM2MzhhNDVlYSIsImV4cCI6MTQ4MzAxMDM1NywicGVybWlzc2lvbnMiOiJoZWFkYmFuZD1hZG1pbjtub2N0aXM9YWRtaW47ZHJlZW1lcj1hZG1pbjtjdXN0b21lcj1hZG1pbjtkYXRhc2V0PWFkbWluO25pZ2h0cmVwb3J0PWFkbWluO2RhdGF1cGxvYWQ9YWRtaW47ZGF0YXNhbXBsZT1hZG1pbjthbGdvcnl0aG09YWRtaW47cXVhbGl0eT1kcmVlbWVyIn0.1qgUF_ToYjbxYM-IBjcr4y0xRpnXdPFIZurXSobuRRY'
 
 __all__ = ['Bender']
 
@@ -193,7 +193,6 @@ class Trial():
         if (self.experiment is not None and self.algo is not None):
             if (len(set(self.algo.parameters) & set(parameters.keys())) == len(self.algo.parameters)
                 and len(set(self.experiment.metrics) & set(results.keys())) == len(self.experiment.metrics)):
-
                 r = requests.post(
                     url='%s/trials/' % BASE_URL,
                     json={'experiment': self.experiment.id,
@@ -205,7 +204,7 @@ class Trial():
                     headers={"Authorization": "Bearer {0}".format(TOKEN)}
                     )
                 if r.status_code == 201:
-                    self.populate(parameters, results, comment)
+                    self.populate(data=r.json())
                     print('Trial successfully send.')
                     return r.json()
 
@@ -216,6 +215,7 @@ class Trial():
             )
         else:
             raise BenderFailed('You must provide an Experiment and Algo before sending new trials.')
+
 
 class BenderFailed(Exception):
     def __init__(self, error):
