@@ -37,7 +37,7 @@ class Bender():
     def _say_hello(self):
         return "Bite my shinny metal ass!"
 
-    def __init__(self, token, algo_id, experiment_id):
+    def __init__(self, token, algo_id=None, experiment_id=None):
         r = requests.get(
             url='{}/user/'.format(self.BASE_URL),
             headers={"Authorization": "JWT {}".format(token)}
@@ -50,26 +50,17 @@ class Bender():
         self.session = requests.Session()
         self.session.headers.update({'Authorization': 'JWT {}'.format(token)})
 
+        self.algo = None
         if algo_id is not None:
             self.set_algo(algo_id=algo_id)
 
+        self.experiment = None
         if algo_id is None and experiment_id:
             self.set_experiment(experiment_id=experiment_id)
 
     def list_experiments(self):
         r = self.session.get(
             url='{}/api/experiments/?owner={}'.format(self.BASE_URL, self.username)
-        )
-        if r.status_code != 200:
-            raise BenderError("Error: {}".format(r.content))
-
-        print("Experiment list")
-        for experiment in r.json()["results"]:
-            print("  - {}: {}".format(experiment["name"], experiment['id']))
-
-    def list_shared_experiments(self):
-        r = self.session.get(
-            url='{}/api/experiments/?shared_experiments={}'.format(self.BASE_URL, self.username)
         )
         if r.status_code != 200:
             raise BenderError("Error: {}".format(r.content))
@@ -82,14 +73,28 @@ class Bender():
                 experiment["name"],
                 experiment['id']))
 
-    def set_experiment(self, experiment_id):
-        self.experiment = Experiment(session=self.session, experiment_id=experiment_id)
+    def list_shared_experiments(self):
         r = self.session.get(
-            url='{}/experiments/{}/'.format(self.BASE_URL, experiment_id),
-            headers={"Authorization": "JWT {}".format(self.token)}
+            url='{}/api/experiments/?shared_experiments={}'.format(self.BASE_URL, self.username)
+        )
+        if r.status_code != 200:
+            raise BenderError("Error: {}".format(r.content))
+
+        print("Shared Experiment list")
+        name = self.experiment.name if self.experiment else ""
+        for experiment in r.json()["results"]:
+            print("  -{} {}: {}".format(
+                ">" if experiment["name"] == name else "",
+                experiment["name"],
+                experiment['id']))
+
+    def set_experiment(self, experiment_id):
+        r = self.session.get(
+            url='{}/api/experiments/{}/'.format(self.BASE_URL, experiment_id),
         )
         if r.status_code != 200:
             raise BenderError('Could not retrieve experiment.')
+        self.experiment = Experiment(**r.json())
 
     def delete_experiment(self, experiment_id):
         r = self.session.delete(
@@ -130,7 +135,7 @@ class Bender():
                 'metrics': metrics,
                 'dataset': dataset,
                 'dataset_parameters': dataset_parameters},
-            headers={"Authorization": "Bearer {}".format(self.token)})
+        )
 
         if r.status_code == 201:
             self.set_experiment(r.json()["pk"])
@@ -141,7 +146,7 @@ class Bender():
 class Experiment():
     """Experiment class for Bender """
 
-    def __init__(self, id, name, description, metrics, owner, dataset, dataset_parameters):
+    def __init__(self, id, name, description, metrics, owner, dataset, dataset_parameters, **kwargs):
         self.id = id
         self.name = name
         self.description = description
@@ -149,7 +154,7 @@ class Experiment():
         self.dataset = dataset
         self.dataset_parameters = dataset_parameters
 
-    def __str__(self):
+    def __repr__(self):
         self.name
 
 
@@ -170,7 +175,6 @@ class Algo():
     def get_latest_used_algo(self, algo_id):
         r = self.session.get(
             url='{}/algos/{}/'.format(self.BASE_URL, algo_id),
-            headers={"Authorization": "Bearer {}".format(self.token)}
         )
 
         if r.status_code == 200:
@@ -201,7 +205,7 @@ class Algo():
         }
 
         r = self.session.post(url='{}/algos/'.formatself.BASE_URL, json=data,
-                              headers={"Authorization": "Bearer {}".format(self.token)})
+                              )
 
         if r.status_code == 201:
             self.populate(r.json())
@@ -211,7 +215,7 @@ class Algo():
     def get(self, algo_id):
         """Retrieve algo instance"""
         r = self.session.get(url='{}/algos/{}/'.format(self.BASE_URL, algo_id),
-                             headers={"Authorization": "Bearer {}".format(self.token)})
+                             )
         if r.status_code == 200:
             self.populate(r.json())
         else:
@@ -276,3 +280,4 @@ if __name__ == "__main__":
     token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InZ0b3RvIiwiZXhwIjoxNTAxMTcyODc5LCJlbWFpbCI6InZhbGVudGluQHJ5dGhtLmNvIiwidXNlcl9pZCI6MTB9.lruHE-kxjsaaPEnJCXCYz84vYaNgfav3UczIMf33ms0"
     bender = Bender(token)
     bender.list_experiments()
+    bender.set_experiment("77d68410-2279-4746-8939-79dc71fbf876")
