@@ -187,10 +187,25 @@ class Bender():
             }
         )
 
-        if r.status_code == 201:
-            self.set_algo(r.json()["id"])
-        else:
+        if r.status_code != 201:
             raise BenderError('Failed to create experiment: {}'.format(r.content))
+        self.set_algo(r.json()["id"])
+
+    def suggest(self, metric, is_loss, optimizer="parzen_estimator"):
+        if self.algo is None:
+            raise BenderError("Set experiment!")
+
+        r = self.session.post(
+            url='{}/api/algos/{}/suggest/'.format(self.BASE_URL, self.algo.id),
+            json={
+                'metric': metric,
+                'is_loss': is_loss,
+                'optimizer': optimizer,
+            }
+        )
+        if r.status_code != 200:
+            raise BenderError('Failed to suggest trial: {}'.format(r.content))
+        return r.json()
 
     def set_trial(self, trial_id):
         r = self.session.get(
