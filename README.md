@@ -1,56 +1,170 @@
-# Bender Client
+# Getting started with bender
+
+First you need to create an account on https://bender.rythm.co
+
+You will be given a TOKEN associated to your account.
+
+:warning: Your TOKEN is personal. You should not give it or add it to any public repository.
+
 
 ### Get started with an experiment:
+
+You can manage and create your experiments from ui at https://bender.rythm.co
+
+You can also use:
+
 ```python
 from bender import Bender
 
-bender = Bender(author='benderuser007')
+bender = Bender(token=TOKEN)
 
-bender.experiment.create(
+bender.new_experiment(
   name='My Experiment',
   description='This is a Bender experiment',
-  metrics=['accuracy',],
+  metrics=['test_accuracy', 'train_accuracy'],
   dataset='my_dataset.csv',
-  dataset_parameters={'parameter': 'value'}
+  dataset_parameters={
+    'CV_folds': '10',
+    'version': '2006'
+  }
 )
 
 bender.experiment.name
 >>> 'My Experiment',
 bender.experiment.id
->>> 1234
+>>> "51b52d11-926d-4b3f-9e76-c341a94a010c"
 ```
 
-### Create an Algorithm and send a new trial
+If you created your experiment online, or want to retrieve a previous experiment just do:
+
 ```python
-bender.algo.create(
+from bender import Bender
+
+bender = Bender(token=TOKEN)
+
+bender.set_experiment("51b52d11-926d-4b3f-9e76-c341a94a010c")
+```
+
+or alternatively
+
+```python
+from bender import Bender
+
+bender = Bender(token=TOKEN, experiment_id="51b52d11-926d-4b3f-9e76-c341a94a010c")
+```
+
+### Create an Algo
+
+Once you have an experiment you can attach algos to it.
+
+You can manage and create your algos from ui at https://bender.rythm.co
+
+You can also use:
+
+```python
+
+# Describe parameters (name is mandatory, category and search_space are optional)
+parameters = [
+    {
+      "name": 'n_estimators',
+      "category": "uniform",
+      "search_space": {
+        "low": 1,
+        "high": 1000,
+        "step": 1,
+      }
+    },
+    {
+      "name": 'criterion',
+      "category": "categorical",
+      "search_space": {
+        "values": ["gini", "entropy"]
+      }
+    }
+]
+
+bender.new_algo(
     name='RandomForest',
-    parameters=['n_estimators', 'criterion']
+    parameters=parameters,
+    description={
+     "version": "1"
+     "description": "Basic random forest from scikit-learn."
+    }
 )
 
-bender.trial.new(
-    parameters={'n_estimators': 30, 'criterion': 'gini'}
-    results={'accuracy': 0.877}
-    comment='not bad'
-)
-```
-
-### Retrieve an experiment
-```python
-bender = Bender(author='benderuser007', experiment=1234)
-bender.experiment.name
->>> 'My Experiment'
-bender.experiment.description
->>> 'This is a Bender experiment'
-```
-
-### Automatically load the latest algo created
-
-```python
-bender = Bender(author='benderuser007', experiment=1234, latest_algo=True)
 bender.algo.name
->>> 'RandomForest'
-bender.trial.new(
-  parameters={'n_estimators': 15, 'criterion': 'entropy'}
-  results={'accuracy': 0.677}
-)
+>>> "RandomForest"
+bender.algo.id
+>>> "62198422-0b79-4cae-a2a4-30969f147ad7"
 ```
+
+If you created your algo online, or want to retrieve a previous algo just do:
+
+
+```python
+
+bender.set_algo("62198422-0b79-4cae-a2a4-30969f147ad7")
+```
+
+Or even
+
+```python
+from bender import Bender
+
+bender = Bender(token=TOKEN, algo_id="62198422-0b79-4cae-a2a4-30969f147ad7")
+```
+
+This will set both the algo and experiment attributes.
+
+:warning: You need to set an experiment or you won't be able to create an algo.
+
+### Get a suggestion
+
+If you defined the search space and category for each parameter of your algo, bender will be able to suggest you new parameters to try.
+
+You will have to tell bender wich metric he should optimize (and weither it is a loss or a 
+reward metric)
+
+In our previous example, we want to optimize parameter to get the highest "test_accuracy" possible.
+
+```python
+
+from bender import Bender
+
+bender = Bender(token=TOKEN, algo_id="62198422-0b79-4cae-a2a4-30969f147ad7")
+
+>>> bender.suggest(metric="test_accuracy", is_loss=False)
+{"n_estimators": 126, "criterion": "giny"}
+>>> bender.suggest(metric="test_accuracy", is_loss=False)
+{"n_estimators": 785, "criterion": "giny"}
+>>> bender.suggest(metric="test_accuracy", is_loss=False)
+{"n_estimators": 21, "criterion": "entropy"}
+
+```
+
+
+### Send a trial
+
+Once you have evaluated your model with a peculiar set of parameters you should register it
+with bender's trial.
+
+Here is a complete scenario with previous experiment and algo:
+
+```python
+
+from bender import Bender
+
+bender = Bender(token=TOKEN, algo_id="62198422-0b79-4cae-a2a4-30969f147ad7")
+
+parameters = bender.suggest(metric="test_accuracy", is_loss=False)
+
+test_accuracy, train_accuracy = my_function(data, parameters)
+
+bender.new_trial(
+  parameters=parameters,
+  results={"test_accuracy": test_accuracy, "train_accuracy": train_accuracy}
+)
+
+```
+
+You can find you experiments, algos and trials at https://bender.rythm.co
