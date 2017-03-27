@@ -1,5 +1,7 @@
-# -*- coding: utf-8 -*-
 from .bender import Bender
+
+__all__ = ['Bender']
+
 
 """
 Bender Python Client

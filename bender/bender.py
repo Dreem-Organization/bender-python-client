@@ -1,18 +1,15 @@
-# -*- coding: utf-8 -*-
 import requests
-
-BASE_URL = 'https://api.rythm.co/v1/dreem/bender'
-TOKEN = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiIyZTExYmRkYmJhMjQ0MjYxYmQzYzA5NDM2MzhhNDVlYSIsImV4cCI6MTQ4MzAxMDM1NywicGVybWlzc2lvbnMiOiJoZWFkYmFuZD1hZG1pbjtub2N0aXM9YWRtaW47ZHJlZW1lcj1hZG1pbjtjdXN0b21lcj1hZG1pbjtkYXRhc2V0PWFkbWluO25pZ2h0cmVwb3J0PWFkbWluO2RhdGF1cGxvYWQ9YWRtaW47ZGF0YXNhbXBsZT1hZG1pbjthbGdvcnl0aG09YWRtaW47cXVhbGl0eT1kcmVlbWVyIn0.1qgUF_ToYjbxYM-IBjcr4y0xRpnXdPFIZurXSobuRRY'
-
-__all__ = ['Bender']
 
 
 class Bender():
+
     """
     Main class for bender
+
     Usage Pattern:
     --------------
     bender = Bender(author=YOUR_PSEUDONYM, experiment=OPTIONAL_EXPERIMENT_ID)
+
     # If no experiment id provided, create one
     bender.experiment.create(
       name='My Experiment',
@@ -31,195 +28,288 @@ class Bender():
         comment='not bad'
     )
     """
-    def __init__(self, author, experiment=None, algo=None, latest_algo=False):
-        self.author = author
-        self.experiment = Experiment(experiment)
-        self.algo = Algo(author=self.author, experiment=self.experiment, algo=algo,
-                         latest_algo=latest_algo)
-        self.trial = Trial(author=self.author, experiment=self.experiment, algo=self.algo)
+
+    BASE_URL = 'https://bender-api.rythm.co'
+
+    def __repr__(self):
+        return "Bending Unit {}".format(self.user_id)
+
+    def _say_hello(self):
+        return "Bite my shinny metal ass!"
+
+    def __init__(self, token, algo_id=None, experiment_id=None):
+        r = requests.get(
+            url='{}/user/'.format(self.BASE_URL),
+            headers={"Authorization": "JWT {}".format(token)}
+        )
+        if r.status_code != 200:
+            raise BenderError("Invalid token, check {} for more informations".format(self.BASE_URL))
+
+        self.username = r.json()["username"]
+        self.user_id = r.json()["pk"]
+        self.session = requests.Session()
+        self.session.headers.update({'Authorization': 'JWT {}'.format(token)})
+
+        self.algo = None
+        if algo_id is not None:
+            self.set_algo(algo_id=algo_id)
+
+        self.experiment = None
+        if algo_id is None and experiment_id:
+            self.set_experiment(experiment_id=experiment_id)
+
+    def list_experiments(self):
+        r = self.session.get(
+            url='{}/api/experiments/?owner={}'.format(self.BASE_URL, self.username)
+        )
+        if r.status_code != 200:
+            raise BenderError("Error: {}".format(r.content))
+
+        print("\nExperiment list")
+        name = self.experiment.name if self.experiment else ""
+        for experiment in r.json()["results"]:
+            print("  -{} {}: {}".format(
+                ">" if experiment["name"] == name else "",
+                experiment["name"],
+                experiment['id']))
+
+    def list_shared_experiments(self):
+        r = self.session.get(
+            url='{}/api/experiments/?shared_experiments={}'.format(self.BASE_URL, self.username)
+        )
+        if r.status_code != 200:
+            raise BenderError("Error: {}".format(r.content))
+
+        print("\nShared Experiment list")
+        name = self.experiment.name if self.experiment else ""
+        for experiment in r.json()["results"]:
+            print("  -{} {}: {}".format(
+                ">" if experiment["name"] == name else "",
+                experiment["name"],
+                experiment['id']))
+
+    def set_experiment(self, experiment_id):
+        r = self.session.get(
+            url='{}/api/experiments/{}/'.format(self.BASE_URL, experiment_id),
+        )
+        if r.status_code != 200:
+            raise BenderError('Could not retrieve experiment.')
+        self.experiment = Experiment(**r.json())
+        self.algo = None
+
+    def delete_experiment(self, experiment_id):
+        r = self.session.delete(
+            url='{}/api/experiments/{}/'.format(self.BASE_URL, experiment_id)
+        )
+        if r.status_code != 204:
+            raise BenderError("Error: {}".format(r.content))
+        else:
+            print("Experiment deleted!")
+
+    def new_experiment(self,
+                       name,
+                       metrics,
+                       description=None,
+                       dataset=None,
+                       dataset_parameters=None,
+                       **kwargs):
+        if type(metrics) != list:
+            if type(metrics) == str:
+                metrics = [metrics]
+            else:
+                raise BenderError("Need to give a list of metrics: e.g: ['metric_1', 'metric_2']")
+
+        r = self.session.post(
+            url='{}/api/experiments/'.format(self.BASE_URL),
+            json={
+                'name': name,
+                'description': description,
+                'metrics': metrics,
+                'dataset': dataset,
+                'dataset_parameters': dataset_parameters},
+        )
+
+        if r.status_code == 201:
+            self.set_experiment(r.json()["id"])
+        else:
+            raise BenderError('Failed to create experiment: {}'.format(r.content))
+
+    def list_algos(self):
+        if self.experiment is None:
+            raise BenderError("You need to set up an experiment.")
+
+        r = self.session.get(
+            url='{}/api/algos/?owner={}'.format(self.BASE_URL, self.username)
+        )
+        if r.status_code != 200:
+            raise BenderError("Error: {}".format(r.content))
+
+        print("\nAlgo list")
+        name = self.algo.name if self.algo else ""
+        for algo in r.json()["results"]:
+            print("  -{} {}: {}".format(
+                ">" if algo["name"] == name else "",
+                algo["name"],
+                algo['id']))
+
+    def set_algo(self, algo_id):
+        r = self.session.get(
+            url='{}/api/algos/{}/'.format(self.BASE_URL, algo_id),
+        )
+        if r.status_code != 200:
+            raise BenderError('Could not retrieve algo.')
+        data = r.json()
+        if self.experiment is None or data["experiment"] != self.experiment.id:
+            self.set_experiment(data["experiment"])
+        self.algo = Algo(**r.json())
+
+    def delete_algo(self, algo_id):
+        r = self.session.delete(
+            url='{}/api/algos/{}/'.format(self.BASE_URL, algo_id)
+        )
+        if r.status_code != 204:
+            raise BenderError("Error: {}".format(r.content))
+        else:
+            print("algo deleted!")
+
+    def new_algo(self, name, parameters, description=None, **kwargs):
+
+        if self.experiment is None:
+            raise BenderError("Set experiment!")
+
+        r = self.session.post(
+            url='{}/api/algos/'.format(self.BASE_URL),
+            json={
+                'name': name,
+                'description': description,
+                'parameters': parameters,
+                'experiment': self.experiment.id
+            }
+        )
+
+        if r.status_code != 201:
+            raise BenderError('Failed to create experiment: {}'.format(r.content))
+        self.set_algo(r.json()["id"])
+
+    def suggest(self, metric, is_loss, optimizer="parzen_estimator"):
+        if self.algo is None:
+            raise BenderError("Set experiment!")
+
+        r = self.session.post(
+            url='{}/api/algos/{}/suggest/'.format(self.BASE_URL, self.algo.id),
+            json={
+                'metric': metric,
+                'is_loss': is_loss,
+                'optimizer': optimizer,
+            }
+        )
+        if r.status_code != 200:
+            raise BenderError('Failed to suggest trial: {}'.format(r.content))
+        return r.json()
+
+    def set_trial(self, trial_id):
+        r = self.session.get(
+            url='{}/api/trials/{}/'.format(self.BASE_URL, trial_id),
+        )
+        if r.status_code != 200:
+            raise BenderError('Could not retrieve trial.')
+        data = r.json()
+        if self.experiment is None or data["experiment"] != self.experiment.id:
+            self.set_experiment(data["experiment"])
+        self.trial = Trial(**r.json())
+
+    def delete_trial(self, trial_id):
+        r = self.session.delete(
+            url='{}/api/trials/{}/'.format(self.BASE_URL, trial_id)
+        )
+        if r.status_code != 204:
+            raise BenderError("Error: {}".format(r.content))
+        else:
+            print("trial deleted!")
+
+    def new_trial(self, results, parameters, comment=None, **kwargs):
+        if self.algo is None:
+            raise BenderError("Set an algo.")
+
+        r = self.session.post(
+            url='{}/api/trials/'.format(self.BASE_URL),
+            json={
+                'algo': self.algo.id,
+                'parameters': parameters,
+                'results': results,
+                'comment': comment,
+            },
+        )
+
+        if r.status_code == 201:
+            self.set_trial(r.json()["id"])
+        else:
+            raise BenderError('Failed to create experiment: {}'.format(set(r.content)))
 
 
 class Experiment():
     """Experiment class for Bender """
-    def __init__(self, experiment):
-        self.id = experiment
-        self.name = None
-        self.description = None
-        self.metrics = None
-        self.author = None
-        self.dataset = None
-        self.dataset_parameters = None
 
-        if experiment is not None:
-            self.get(experiment)
+    def __init__(self,
+                 id,
+                 name,
+                 description,
+                 metrics,
+                 owner,
+                 dataset,
+                 dataset_parameters,
+                 **kwargs):
+        self.id = id
+        self.name = name
+        self.description = description
+        self.metrics = metrics
+        self.dataset = dataset
+        self.dataset_parameters = dataset_parameters
 
-    def populate(self, data):
-        self.id = data.get('id')
-        self.name = data.get('name')
-        self.description = data.get('description')
-        self.metrics = data.get('metrics')
-        self.author = data.get('author')
-        self.dataset = data.get('dataset')
-        self.dataset_parameters = data.get('dataset_parameters')
-
-    def get(self, experiment_id):
-        """Retrieve experiment instance"""
-        r = requests.get(
-            url='%s/experiments/%s/' % (BASE_URL, experiment_id),
-            headers={"Authorization": "Bearer {0}".format(TOKEN)}
-            )
-        if r.status_code == 200:
-            self.populate(r.json())
-        else:
-            raise BenderFailed('Could not retrieve experiment.')
-
-    def create(self, name, description, metrics, author, dataset, dataset_parameters):
-        """
-        Please provide the following:
-        - name: string
-        - description: string
-        - metrics: list of strings
-        - dataset: string
-        - dataset_parameters: dict
-        - author: string
-        """
-        r = requests.post(
-            url='%s/experiments/' % (BASE_URL),
-            json={
-              'name': name,
-              'description': description,
-              'metrics': metrics,
-              'dataset': dataset,
-              'author': author,
-              'dataset_parameters': dataset_parameters},
-            headers={"Authorization": "Bearer {0}".format(TOKEN)})
-
-        if r.status_code == 201:
-            self.populate(r.json())
-        else:
-            print(r.text)
-            raise BenderFailed('Failed to create experiment.')
-
-    def __str__(self):
-        if self.name is None:
-            print('Please create or get an experiment.')
+    def __repr__(self):
+        return str(self.name)
 
 
 class Algo():
     """ Algo class for Bender """
-    def __init__(self, experiment, author, algo, latest_algo):
-        self.id = None
-        self.name = None
-        self.parameters = None
-        self.experiment = experiment
-        self.experiment_id = experiment.id
 
-        if algo is not None:
-            self.get(algo)
-
-        elif self.experiment is not None and latest_algo is True:
-            self.get_latest_used_algo(experiment.id, author)
-
-    def populate(self, data):
-        self.id = data.get('id')
-        self.name = data.get('name')
-        self.experiment_id = data.get('experiment')
-        self.parameters = data.get('parameters')
-
-    def get_latest_used_algo(self, experiment_id, author):
-        r = requests.get(
-            url='%s/latest_algo_for_experiment/%s/'
-            % (BASE_URL, experiment_id),
-            headers={"Authorization": "Bearer {0}".format(TOKEN)}
-        )
-
-        if r.status_code == 200:
-            self.populate(r.json()[0])
-        else:
-            raise BenderFailed('Could not retrieve latest algo.')
-
-    def create(self, name, parameters):
-        """
-        Please provide the following:
-        - name: string
-        - parameters: list of strings
-        """
-        data = {'name': name,
-                'parameters': parameters,
-                'experiment': self.experiment.id}
-
-        r = requests.post(url='%s/algos/' % BASE_URL, json=data,
-                          headers={"Authorization": "Bearer {0}".format(TOKEN)})
-
-        if r.status_code == 201:
-            self.populate(r.json())
-        else:
-            raise BenderFailed('Could not create Algo')
-
-    def get(self, algo_id):
-        """Retrieve algo instance"""
-        r = requests.get(url='%s/algos/%s/' % (BASE_URL, algo_id),
-                         headers={"Authorization": "Bearer {0}".format(TOKEN)})
-        if r.status_code == 200:
-            self.populate(r.json())
-        else:
-            raise BenderFailed('Could not retrieve experiment.')
+    def __init__(self, id, name, experiment, parameters, description, **kwargs):
+        self.id = id
+        self.name = name
+        self.parameters = parameters
+        self.description = description
 
     def __str__(self):
-        if self.name is None:
-            raise BenderFailed('Please create or get an algorithm.')
-        else:
-            return self.name
+        return str(self.name)
 
 
 class Trial():
     """ Trial class for bender """
-    def __init__(self, author, experiment=None, algo=None):
-        self.experiment = experiment
-        self.algo = algo
-        self.author = author
-        self.parameters = None
-        self.results = None
-        self.comment = None
-        self.id = None
 
-    def populate(self, data):
-        self.parameters = data.get('parameters')
-        self.results = data.get('results')
-        self.comment = data.get('comment')
-        self.id = data.get('id')
-
-    def new(self, parameters, results, comment=None):
-        if (self.experiment is not None and self.algo is not None):
-            if (len(set(self.algo.parameters) & set(parameters.keys())) == len(self.algo.parameters)
-                and len(set(self.experiment.metrics) & set(results.keys())) == len(self.experiment.metrics)):
-                r = requests.post(
-                    url='%s/trials/' % BASE_URL,
-                    json={'experiment': self.experiment.id,
-                          'algo': self.algo.id,
-                          'author': self.author,
-                          'parameters': parameters,
-                          'results': results,
-                          'comment': comment},
-                    headers={"Authorization": "Bearer {0}".format(TOKEN)}
-                    )
-                if r.status_code == 201:
-                    self.populate(data=r.json())
-                    print('Trial successfully send.')
-                    return r.json()
-
-            raise BenderFailed(
-                "Could not send trial.\nPlease make sure you provided the following:\
-                \nParameters: %s.\nResults: %s."
-                % (', '.join(self.algo.parameters), ', '.join(self.experiment.metrics))
-            )
-        else:
-            raise BenderFailed('You must provide an Experiment and Algo before sending new trials.')
+    def __init__(self, parameters, results, comment, id, **kwargs):
+        self.parameters = parameters
+        self.results = results
+        self.comment = comment
+        self.id = id
 
 
-class BenderFailed(Exception):
+class BenderError(Exception):
     def __init__(self, error):
         self.error = error
 
     def __str__(self):
         return self.error
+
+
+if __name__ == "__main__":
+
+    token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InZ0b3RvIiwiZXhwIjoxNTAxMTcyODc5LCJlbWFpbCI6InZhbGVudGluQHJ5dGhtLmNvIiwidXNlcl9pZCI6MTB9.lruHE-kxjsaaPEnJCXCYz84vYaNgfav3UczIMf33ms0"
+    bender = Bender(token)
+    bender.list_experiments()
+    bender.set_experiment("066ca930-8e4d-4ce7-a142-77088a403347")
+    bender.list_experiments()
+    bender.list_algos()
+    bender.set_algo("9106820f-5da0-4ad9-8eb0-8f951d09f05d")
+    bender.list_experiments()
+    bender.list_algos()
+    bender.new_trial(results={"loss": 2}, parameters={"param1": 1, "param2": 2})
