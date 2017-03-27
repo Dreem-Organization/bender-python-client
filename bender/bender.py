@@ -215,6 +215,7 @@ class Bender():
     def new_trial(self, results, parameters, comment=None, **kwargs):
         if self.algo is None:
             raise BenderError("Set an algo.")
+
         r = self.session.post(
             url='{}/api/trials/'.format(self.BASE_URL),
             json={
@@ -228,7 +229,7 @@ class Bender():
         if r.status_code == 201:
             self.set_trial(r.json()["id"])
         else:
-            raise BenderError('Failed to create experiment: {}'.format(r.content))
+            raise BenderError('Failed to create experiment: {}'.format(set(r.content)))
 
 
 class Experiment():
@@ -270,7 +271,7 @@ class Algo():
 class Trial():
     """ Trial class for bender """
 
-    def __init__(self, parameters, results, comment, id):
+    def __init__(self, parameters, results, comment, id, **kwargs):
         self.parameters = parameters
         self.results = results
         self.comment = comment
@@ -290,10 +291,10 @@ if __name__ == "__main__":
     token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InZ0b3RvIiwiZXhwIjoxNTAxMTcyODc5LCJlbWFpbCI6InZhbGVudGluQHJ5dGhtLmNvIiwidXNlcl9pZCI6MTB9.lruHE-kxjsaaPEnJCXCYz84vYaNgfav3UczIMf33ms0"
     bender = Bender(token)
     bender.list_experiments()
-    bender.set_experiment("77d68410-2279-4746-8939-79dc71fbf876")
-    bender.list_experiments()
-    bender.new_experiment(name="lol", metrics=["loss"])
+    bender.set_experiment("066ca930-8e4d-4ce7-a142-77088a403347")
     bender.list_experiments()
     bender.list_algos()
-    bender.set_algo("fe53dfe9-2b9c-4cb5-b1b4-0ab53e943e44")
+    bender.set_algo("9106820f-5da0-4ad9-8eb0-8f951d09f05d")
+    bender.list_experiments()
     bender.list_algos()
+    bender.new_trial(results={"loss": 2}, parameters={"param1": 1, "param2": 2})
