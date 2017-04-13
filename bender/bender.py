@@ -217,11 +217,30 @@ class Bender():
         if r.status_code != 200:
             raise BenderError("Error: {}".format(r.content))
 
-        trial_list = []
-        for trial in r.json()["results"]:
-            trial_list.append(trial['id'])
+        # trial_list = []
+        # for trial in r.json()["results"]:
+        #     trial_list.append(trial['id'])
 
-        return trial_list
+        # return trial_list
+
+        return r.json()['results']
+
+    def update_trial(self, trial_id, parameters, results, comment=None):
+        r = self.session.get(
+            url='{}/api/trials/{}/'.format(self.BASE_URL, trial_id),
+        )
+        if r.status_code != 200:
+            raise BenderError("Invalid trial_id")
+
+        r = self.session.patch(
+            url='{}/api/trials/{}/'.format(self.BASE_URL, trial_id),
+            json={
+                # 'algo': self.algo.id,
+                'parameters': parameters,
+                'results': results,
+                'comment': comment,
+            },
+        )
 
     def set_trial(self, trial_id):
         r = self.session.get(
@@ -261,6 +280,8 @@ class Bender():
             self.set_trial(r.json()["id"])
         else:
             raise BenderError('Failed to create experiment: {}'.format(set(r.content)))
+
+        return r.json()["id"]
 
 
 class Experiment():
