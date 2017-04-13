@@ -207,6 +207,22 @@ class Bender():
             raise BenderError('Failed to suggest trial: {}'.format(r.content))
         return r.json()
 
+    def list_trials(self):
+        if self.algo is None:
+            raise BenderError("You need to set up an algo.")
+
+        r = self.session.get(
+            url='{}/api/trials/?algo={}'.format(self.BASE_URL, self.algo.id)
+        )
+        if r.status_code != 200:
+            raise BenderError("Error: {}".format(r.content))
+
+        trial_list = []
+        for trial in r.json()["results"]:
+            trial_list.append(trial['id'])
+
+        return trial_list
+
     def set_trial(self, trial_id):
         r = self.session.get(
             url='{}/api/trials/{}/'.format(self.BASE_URL, trial_id),
