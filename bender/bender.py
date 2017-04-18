@@ -51,10 +51,11 @@ class Bender():
         self.session.headers.update({'Authorization': 'JWT {}'.format(token)})
 
         self.algo = None
+        self.experiment = None
+
         if algo_id is not None:
             self.set_algo(algo_id=algo_id)
 
-        self.experiment = None
         if algo_id is None and experiment_id:
             self.set_experiment(experiment_id=experiment_id)
 
@@ -207,6 +208,35 @@ class Bender():
             raise BenderError('Failed to suggest trial: {}'.format(r.content))
         return r.json()
 
+    def list_trials(self):
+        if self.algo is None:
+            raise BenderError("You need to set up an algo.")
+
+        r = self.session.get(
+            url='{}/api/trials/?algo={}'.format(self.BASE_URL, self.algo.id)
+        )
+        if r.status_code != 200:
+            raise BenderError("Error: {}".format(r.content))
+
+        return r.json()['results']
+
+    def update_trial(self, trial_id, parameters, results, comment=None):
+        r = self.session.get(
+            url='{}/api/trials/{}/'.format(self.BASE_URL, trial_id),
+        )
+        if r.status_code != 200:
+            raise BenderError("Invalid trial_id")
+
+        r = self.session.patch(
+            url='{}/api/trials/{}/'.format(self.BASE_URL, trial_id),
+            json={
+                # 'algo': self.algo.id,
+                'parameters': parameters,
+                'results': results,
+                'comment': comment,
+            },
+        )
+
     def set_trial(self, trial_id):
         r = self.session.get(
             url='{}/api/trials/{}/'.format(self.BASE_URL, trial_id),
@@ -245,6 +275,8 @@ class Bender():
             self.set_trial(r.json()["id"])
         else:
             raise BenderError('Failed to create experiment: {}'.format(set(r.content)))
+
+        return r.json()["id"]
 
 
 class Experiment():
