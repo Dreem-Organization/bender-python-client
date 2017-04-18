@@ -1,4 +1,5 @@
 import requests
+from .utils import new_api_session, remove_saved_token
 
 
 class Bender():
@@ -37,18 +38,8 @@ class Bender():
     def _say_hello(self):
         return "Bite my shinny metal ass!"
 
-    def __init__(self, token, algo_id=None, experiment_id=None):
-        r = requests.get(
-            url='{}/user/'.format(self.BASE_URL),
-            headers={"Authorization": "JWT {}".format(token)}
-        )
-        if r.status_code != 200:
-            raise BenderError("Invalid token, check {} for more informations".format(self.BASE_URL))
-
-        self.username = r.json()["username"]
-        self.user_id = r.json()["pk"]
-        self.session = requests.Session()
-        self.session.headers.update({'Authorization': 'JWT {}'.format(token)})
+    def __init__(self, algo_id=None, experiment_id=None):
+        self.session, self.username = new_api_session(url=self.BASE_URL)
 
         self.algo = None
         self.experiment = None
@@ -58,6 +49,12 @@ class Bender():
 
         if algo_id is None and experiment_id:
             self.set_experiment(experiment_id=experiment_id)
+
+    def revoke_credentials(self):
+        remove_saved_token()
+        self.session = None
+        self.username = None
+        self.session, self.username = new_api_session(url=self.BASE_URL)
 
     def list_experiments(self):
         r = self.session.get(
