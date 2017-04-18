@@ -52,7 +52,7 @@ class Bender():
 
         self.algo = None
         self.experiment = None
-        
+
         if algo_id is not None:
             self.set_algo(algo_id=algo_id)
 
@@ -217,12 +217,6 @@ class Bender():
         )
         if r.status_code != 200:
             raise BenderError("Error: {}".format(r.content))
-
-        # trial_list = []
-        # for trial in r.json()["results"]:
-        #     trial_list.append(trial['id'])
-
-        # return trial_list
 
         return r.json()['results']
 
