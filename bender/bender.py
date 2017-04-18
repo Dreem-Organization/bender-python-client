@@ -51,10 +51,11 @@ class Bender():
         self.session.headers.update({'Authorization': 'JWT {}'.format(token)})
 
         self.algo = None
+        self.experiment = None
+        
         if algo_id is not None:
             self.set_algo(algo_id=algo_id)
 
-        self.experiment = None
         if algo_id is None and experiment_id:
             self.set_experiment(experiment_id=experiment_id)
 
