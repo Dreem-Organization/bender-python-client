@@ -39,7 +39,7 @@ class Bender():
         return "Bite my shinny metal ass!"
 
     def __init__(self, algo_id=None, experiment_id=None):
-        self.session, self.username = new_api_session(url=self.BASE_URL)
+        self.session, self.username, self.user_id = new_api_session(url=self.BASE_URL)
 
         self.algo = None
         self.experiment = None

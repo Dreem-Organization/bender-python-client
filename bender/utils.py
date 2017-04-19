@@ -34,8 +34,9 @@ def load_and_check_token(url):
     request_info = requests.get("{}/user/".format(url),
                                 headers={"Authorization": "JWT {}".format(token)})
     username = request_info.json()['username']
+    pk = request_info.json()['pk']
 
-    return token, username
+    return token, username, pk
 
 
 def save_token(token):
@@ -69,15 +70,16 @@ def retrieve_token_and_username(url, cpt=0):
                                 headers={"Authorization": "JWT {}".format(token)})
     request_info.raise_for_status()
     username = request_info.json()['username']
+    pk = request_info.json()['pk']
 
-    return token, username
+    return token, username, pk
 
 
 def new_api_session(url):
     try:
-        token, username = load_and_check_token(url=url)
+        token, username, pk = load_and_check_token(url=url)
     except Exception:
-        token, username = retrieve_token_and_username(url=url)
+        token, username, pk = retrieve_token_and_username(url=url)
     session = requests.Session()
     session.headers.update({'Authorization': 'JWT {}'.format(token)})
-    return session, username
+    return session, username, pk
