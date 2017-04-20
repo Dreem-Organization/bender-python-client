@@ -137,7 +137,8 @@ class Bender():
             raise BenderError("You need to set up an experiment.")
 
         r = self.session.get(
-            url='{}/api/algos/?owner={}'.format(self.BASE_URL, self.username)
+            url='{}/api/algos/?owner={}&&experiment={}'.format(
+                self.BASE_URL, self.username, self.experiment.id)
         )
         if r.status_code != 200:
             raise BenderError("Error: {}".format(r.content))
@@ -188,10 +189,15 @@ class Bender():
         if r.status_code != 201:
             raise BenderError('Failed to create experiment: {}'.format(r.content))
         self.set_algo(r.json()["id"])
+        if self.algo.is_search_space_defined is False:
+            print("Search space is not defined properly. Suggestion won't work.")
 
     def suggest(self, metric, is_loss, optimizer="parzen_estimator"):
         if self.algo is None:
             raise BenderError("Set experiment!")
+
+        if self.algo.is_search_space_defined is False:
+            raise BenderError("Must define a search space properly.")
 
         r = self.session.post(
             url='{}/api/algos/{}/suggest/'.format(self.BASE_URL, self.algo.id),
@@ -302,11 +308,12 @@ class Experiment():
 class Algo():
     """ Algo class for Bender """
 
-    def __init__(self, id, name, experiment, parameters, description, **kwargs):
+    def __init__(self, id, name, experiment, parameters, description, is_search_space_defined, **kwargs):
         self.id = id
         self.name = name
         self.parameters = parameters
         self.description = description
+        self.is_search_space_defined = is_search_space_defined
 
     def __str__(self):
         return str(self.name)
