@@ -97,6 +97,23 @@ parameters = [
       "category": "categorical",
       "search_space": {
         "values": ["gini", "entropy"]
+      },
+    },
+    {
+      "name": 'max_depth',
+      "category": "loguniform",
+      "search_space": {
+        "low": 1e2,
+        "high": 1e5,
+        "step": 10,
+      }
+    },
+    {
+      "name": 'learning_rate',
+      "category": "lognormal",
+      "search_space": {
+        "mu": 1e-3,
+        "sigma": 1e1,
       }
     }
 ]
