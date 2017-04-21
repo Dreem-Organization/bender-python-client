@@ -58,7 +58,7 @@ If you created your experiment online, or want to retrieve a previous experiment
 ```python
 from bender import Bender
 
-bender = Bender(token=TOKEN)
+bender = Bender()
 
 bender.set_experiment("51b52d11-926d-4b3f-9e76-c341a94a010c")
 ```
