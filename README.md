@@ -189,7 +189,7 @@ Here is a complete scenario with previous experiment and algo:
 
 from bender import Bender
 
-bender = Bender(token=TOKEN, algo_id="62198422-0b79-4cae-a2a4-30969f147ad7")
+bender = Bender(algo_id="62198422-0b79-4cae-a2a4-30969f147ad7")
 
 parameters = bender.suggest(metric="test_accuracy", is_loss=False)
 
