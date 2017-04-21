@@ -1,4 +1,3 @@
-import requests
 from .utils import new_api_session, remove_saved_token
 
 
