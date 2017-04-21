@@ -68,7 +68,7 @@ or alternatively
 ```python
 from bender import Bender
 
-bender = Bender(token=TOKEN, experiment_id="51b52d11-926d-4b3f-9e76-c341a94a010c")
+bender = Bender(experiment_id="51b52d11-926d-4b3f-9e76-c341a94a010c")
 ```
 
 ### Create an Algo
@@ -146,7 +146,7 @@ Or even
 ```python
 from bender import Bender
 
-bender = Bender(token=TOKEN, algo_id="62198422-0b79-4cae-a2a4-30969f147ad7")
+bender = Bender(algo_id="62198422-0b79-4cae-a2a4-30969f147ad7")
 ```
 
 This will set both the algo and experiment attributes.
@@ -166,7 +166,7 @@ In our previous example, we want to optimize parameter to get the highest "test_
 
 from bender import Bender
 
-bender = Bender(token=TOKEN, algo_id="62198422-0b79-4cae-a2a4-30969f147ad7")
+bender = Bender(algo_id="62198422-0b79-4cae-a2a4-30969f147ad7")
 
 >>> bender.suggest(metric="test_accuracy", is_loss=False)
 {"n_estimators": 126, "criterion": "giny"}
