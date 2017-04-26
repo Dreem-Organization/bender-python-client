@@ -135,6 +135,20 @@ class Bender():
         else:
             raise BenderError('Failed to create experiment: {}'.format(r.content))
 
+    def share_experiment(self, experiment_id, username):
+        r = self.session.get(
+            url='{}/api/experiments/{}/'.format(self.BASE_URL, experiment_id),
+        )
+        if r.status_code != 200:
+            raise BenderError('Could not retrieve experiment.')
+
+        r = self.session.patch(
+            url='{}/api/experiments/{}/'.format(self.BASE_URL, experiment_id),
+            json={
+                    'shared_with' : [username],
+            },
+        )
+
     def list_algos(self):
         if self.experiment is None:
             raise BenderError("You need to set up an experiment.")
@@ -220,21 +234,25 @@ class Bender():
 
         return r.json()['results']
 
-    def update_trial(self, trial_id, parameters, results, comment=None):
+    def update_trial(self, trial_id, parameters=None, results=None, comment=None):
+        # First we check that the trial id is valid
         r = self.session.get(
             url='{}/api/trials/{}/'.format(self.BASE_URL, trial_id),
         )
         if r.status_code != 200:
             raise BenderError("Invalid trial_id")
-
+        # Then, we fill a dict that contains changing info 
+        json = {}
+        if parameters is not None:
+            json['parameters'] = parameters        
+        if results is not None:
+            json['results'] = results
+        if comment is not None:
+            json['comment'] = comment
+        # API request to update trial info
         r = self.session.patch(
             url='{}/api/trials/{}/'.format(self.BASE_URL, trial_id),
-            json={
-                # 'algo': self.algo.id,
-                'parameters': parameters,
-                'results': results,
-                'comment': comment,
-            },
+            json=json,
         )
 
     def set_trial(self, trial_id):
