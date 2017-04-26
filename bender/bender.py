@@ -1,4 +1,4 @@
-import requests
+from .utils import new_api_session, remove_saved_token
 
 
 class Bender():
@@ -37,18 +37,8 @@ class Bender():
     def _say_hello(self):
         return "Bite my shinny metal ass!"
 
-    def __init__(self, token, algo_id=None, experiment_id=None):
-        r = requests.get(
-            url='{}/user/'.format(self.BASE_URL),
-            headers={"Authorization": "JWT {}".format(token)}
-        )
-        if r.status_code != 200:
-            raise BenderError("Invalid token, check {} for more informations".format(self.BASE_URL))
-
-        self.username = r.json()["username"]
-        self.user_id = r.json()["pk"]
-        self.session = requests.Session()
-        self.session.headers.update({'Authorization': 'JWT {}'.format(token)})
+    def __init__(self, algo_id=None, experiment_id=None):
+        self.session, self.username, self.user_id = new_api_session(url=self.BASE_URL)
 
         self.algo = None
         self.experiment = None
@@ -58,6 +48,12 @@ class Bender():
 
         if algo_id is None and experiment_id:
             self.set_experiment(experiment_id=experiment_id)
+
+    def revoke_credentials(self):
+        remove_saved_token()
+        self.session = None
+        self.username = None
+        self.session, self.username = new_api_session(url=self.BASE_URL)
 
     def list_experiments(self):
         r = self.session.get(
@@ -154,7 +150,8 @@ class Bender():
             raise BenderError("You need to set up an experiment.")
 
         r = self.session.get(
-            url='{}/api/algos/?owner={}'.format(self.BASE_URL, self.username)
+            url='{}/api/algos/?owner={}&&experiment={}'.format(
+                self.BASE_URL, self.username, self.experiment.id)
         )
         if r.status_code != 200:
             raise BenderError("Error: {}".format(r.content))
@@ -205,10 +202,18 @@ class Bender():
         if r.status_code != 201:
             raise BenderError('Failed to create experiment: {}'.format(r.content))
         self.set_algo(r.json()["id"])
+        if self.algo.is_search_space_defined is False:
+            print("Search space is not defined properly. Suggestion won't work.")
 
     def suggest(self, metric, is_loss, optimizer="parzen_estimator"):
         if self.algo is None:
             raise BenderError("Set experiment!")
+
+        if metric not in self.experiment.metrics:
+            raise BenderError("Metrics need to be in {}".format(self.experiments.metrics))
+
+        if self.algo.is_search_space_defined is False:
+            raise BenderError("Must define a search space properly.")
 
         r = self.session.post(
             url='{}/api/algos/{}/suggest/'.format(self.BASE_URL, self.algo.id),
@@ -254,6 +259,38 @@ class Bender():
             url='{}/api/trials/{}/'.format(self.BASE_URL, trial_id),
             json=json,
         )
+
+    def list_k_best_trials(self, metric, is_loss, k=10, summary=True):
+        if self.algo is None:
+            raise BenderError("You need to set up an algo.")
+
+        if metric not in self.experiment.metrics:
+            raise BenderError("Metrics need to be in {}".format(self.experiment.metrics))
+
+        r = self.session.get(
+            url='{}/api/trials/?algo={}&&o_results={}{}&&limit={}'.format(
+                self.BASE_URL,
+                self.algo.id,
+                "" if is_loss else "-",
+                metric,
+                k)
+        )
+        if r.status_code != 200:
+            raise BenderError("Error: {}".format(r.content))
+
+        if summary:
+            results = [
+                {
+                    "parameters": result["parameters"],
+                    "comment": result["comment"],
+                    "results": result["results"],
+                }
+                for result in r.json()['results']
+            ]
+        else:
+            results = r.json()['results']
+
+        return results
 
     def set_trial(self, trial_id):
         r = self.session.get(
@@ -323,11 +360,12 @@ class Experiment():
 class Algo():
     """ Algo class for Bender """
 
-    def __init__(self, id, name, experiment, parameters, description, **kwargs):
+    def __init__(self, id, name, experiment, parameters, description, is_search_space_defined, **kwargs):
         self.id = id
         self.name = name
         self.parameters = parameters
         self.description = description
+        self.is_search_space_defined = is_search_space_defined
 
     def __str__(self):
         return str(self.name)
