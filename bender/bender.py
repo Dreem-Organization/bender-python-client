@@ -72,7 +72,7 @@ class Bender():
 
     def list_shared_experiments(self):
         r = self.session.get(
-            url='{}/api/experiments/?shared_experiments={}'.format(self.BASE_URL, self.username)
+            url='{}/api/experiments/?shared_with={}'.format(self.BASE_URL, self.username)
         )
         if r.status_code != 200:
             raise BenderError("Error: {}".format(r.content))
@@ -136,8 +136,8 @@ class Bender():
             raise BenderError("You need to set up an experiment.")
 
         r = self.session.get(
-            url='{}/api/algos/?owner={}&&experiment={}'.format(
-                self.BASE_URL, self.username, self.experiment.id)
+            url='{}/api/algos/?experiment={}'.format(
+                self.BASE_URL, self.experiment.id)
         )
         if r.status_code != 200:
             raise BenderError("Error: {}".format(r.content))
