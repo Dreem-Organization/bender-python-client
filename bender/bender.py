@@ -225,7 +225,39 @@ class Bender():
 
         return r.json()['results']
 
-    def list_k_best_trials(self, metric, is_loss, k=10, summary=True):
+    def algo_list_k_best_trials(self, metric, is_loss, k=10, summary=True):
+        if self.algo is None:
+            raise BenderError("You need to set up an algo.")
+
+        if metric not in self.experiment.metrics:
+            raise BenderError("Metrics need to be in {}".format(self.experiment.metrics))
+
+        r = self.session.get(
+            url='{}/api/trials/?algo={}&&o_results={}{}&&limit={}'.format(
+                self.BASE_URL,
+                self.algo.id,
+                "" if is_loss else "-",
+                metric,
+                k)
+        )
+        if r.status_code != 200:
+            raise BenderError("Error: {}".format(r.content))
+
+        if summary:
+            results = [
+                {
+                    "parameters": result["parameters"],
+                    "comment": result["comment"],
+                    "results": result["results"],
+                }
+                for result in r.json()['results']
+            ]
+        else:
+            results = r.json()['results']
+
+        return results
+
+    def experiment_list_k_best_trials(self, metric, is_loss, k=10, summary=True):
         if self.algo is None:
             raise BenderError("You need to set up an algo.")
 
