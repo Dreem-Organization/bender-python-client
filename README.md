@@ -122,7 +122,7 @@ bender.new_algo(
     name='RandomForest',
     parameters=parameters,
     description={
-     "version": "1"
+     "version": "1",
      "description": "Basic random forest from scikit-learn."
     }
 )
