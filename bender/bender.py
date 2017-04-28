@@ -343,7 +343,7 @@ class Bender():
         if r.status_code == 201:
             self.set_trial(r.json()["id"])
         else:
-            raise BenderError('Failed to create experiment: {}'.format(set(r.content)))
+            raise BenderError('Failed to create experiment: {}'.format(r.content))
 
         return r.json()["id"]
 
