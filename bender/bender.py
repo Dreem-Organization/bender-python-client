@@ -258,16 +258,16 @@ class Bender():
         return results
 
     def experiment_list_k_best_trials(self, metric, is_loss, k=10, summary=True):
-        if self.algo is None:
-            raise BenderError("You need to set up an algo.")
+        if self.experiment is None:
+            raise BenderError("You need to set up an experiment.")
 
         if metric not in self.experiment.metrics:
             raise BenderError("Metrics need to be in {}".format(self.experiment.metrics))
 
         r = self.session.get(
-            url='{}/api/trials/?algo={}&&o_results={}{}&&limit={}'.format(
+            url='{}/api/trials/?experiment={}&&o_results={}{}&&limit={}'.format(
                 self.BASE_URL,
-                self.algo.id,
+                self.experiment.id,
                 "" if is_loss else "-",
                 metric,
                 k)
