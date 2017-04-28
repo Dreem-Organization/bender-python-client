@@ -196,7 +196,7 @@ class Bender():
             raise BenderError("Set experiment!")
 
         if metric not in self.experiment.metrics:
-            raise BenderError("Metrics need to be in {}".format(self.experiments.metrics))
+            raise BenderError("Metrics need to be in {}".format(self.experiment.metrics))
 
         if self.algo.is_search_space_defined is False:
             raise BenderError("Must define a search space properly.")
