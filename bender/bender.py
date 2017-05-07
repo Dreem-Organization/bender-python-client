@@ -53,7 +53,7 @@ class Bender():
         remove_saved_token()
         self.session = None
         self.username = None
-        self.session, self.username = new_api_session(url=self.BASE_URL)
+        self.session, self.username, self.user_id = new_api_session(url=self.BASE_URL)
 
     def list_experiments(self):
         r = self.session.get(
