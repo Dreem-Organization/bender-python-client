@@ -1,9 +1,10 @@
 import requests
 import getpass
 from jose import jwt
-from datetime import datetime
+import time
 import json
 import os
+import sys
 
 
 def token_path():
@@ -26,7 +27,8 @@ def load_and_check_token(url):
         options={
             'verify_signature': False,
             'verify_exp': False})
-    now = int(datetime.utcnow().timestamp())
+    now = time.time()
+
     if now > (payload['exp'] - 7 * 24 * 3600):
         raise Exception("Token will expire")
 
@@ -47,7 +49,10 @@ def save_token(token):
 
 def retrieve_token_and_username(url, cpt=0):
     """ Tries to load credentials from disk and prompt the user for it. """
-    email = input('\nPlease enter your email\n')
+    if sys.version_info.major == 3:
+        email = input('\nPlease enter your email\n')
+    else:
+        email = raw_input('\nPlease enter your email\n')
     password = getpass.getpass()
 
     request_login = requests.post("{}/login/".format(url), json={
