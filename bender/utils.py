@@ -82,4 +82,5 @@ def new_api_session(url):
         token, username, pk = retrieve_token_and_username(url=url)
     session = requests.Session()
     session.headers.update({'Authorization': 'JWT {}'.format(token)})
+    session.mount("https://", requests.adapters.HTTPAdapter(max_retries=500))
     return session, username, pk
