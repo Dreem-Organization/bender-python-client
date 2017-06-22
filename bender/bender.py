@@ -244,9 +244,9 @@ class Bender():
             )
         )
         if r.status_code == 200 and r.json()["count"] == 1:
-            self.set_experiment(r.json()["results"]["id"])
+            self.set_algo(r.json()["results"]["id"])
         else:
-            self.new_experiment(name, parameters, description=None, **kwargs)
+            self.new_algo(name, parameters, description=None, **kwargs)
 
     def suggest(self, metric, is_loss, optimizer="parzen_estimator"):
         if self.algo is None:
