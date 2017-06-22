@@ -70,6 +70,25 @@ class Bender():
                 experiment["name"],
                 experiment['id']))
 
+    def list_algos(self):
+        if self.experiment is None:
+            raise BenderError("You need to set up an experiment.")
+
+        r = self.session.get(
+            url='{}/api/algos/?experiment={}'.format(
+                self.BASE_URL, self.experiment.id)
+        )
+        if r.status_code != 200:
+            raise BenderError("Error: {}".format(r.content))
+
+        print("\nAlgo list")
+        name = self.algo.name if self.algo else ""
+        for algo in r.json()["results"]:
+            print("  -{} {}: {}".format(
+                ">" if algo["name"] == name else "",
+                algo["name"],
+                algo['id']))
+
     def list_shared_experiments(self):
         r = self.session.get(
             url='{}/api/experiments/?shared_with={}'.format(self.BASE_URL, self.username)
