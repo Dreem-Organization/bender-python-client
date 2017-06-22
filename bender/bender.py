@@ -85,14 +85,33 @@ class Bender():
                 experiment["name"],
                 experiment['id']))
 
-    def set_experiment(self, experiment_id):
-        r = self.session.get(
-            url='{}/api/experiments/{}/'.format(self.BASE_URL, experiment_id),
-        )
-        if r.status_code != 200:
-            raise BenderError('Could not retrieve experiment.')
-        self.experiment = Experiment(**r.json())
+    def set_experiment(self, name=None, experiment_id=None):
+        if experiment_id is not None:
+            r = self.session.get(
+                url='{}/api/experiments/{}/'.format(self.BASE_URL, experiment_id),
+            )
+            if r.status_code != 200:
+                raise BenderError('Could not retrieve experiment.')
+            data = r.json()
+
+        elif name is not None:
+            r = self.session.get(
+                url='{}/api/experiments/?owner={}&name={}'.format(
+                    self.BASE_URL,
+                    self.username,
+                    name
+                ).replace(" ", "%20")
+            )
+            if r.status_code != 200 or r.json()["count"] != 1:
+                raise BenderError('Could not retrieve experiment.')
+            data = r.json()["results"][0]
+
+        else:
+            raise BenderError("Provide a name or experiment_id!")
+
+        self.experiment = Experiment(**data)
         self.algo = None
+        return
 
     def delete_experiment(self, experiment_id):
         r = self.session.delete(
@@ -131,24 +150,26 @@ class Bender():
         else:
             raise BenderError('Failed to create experiment: {}'.format(r.content))
 
-    def list_algos(self):
-        if self.experiment is None:
-            raise BenderError("You need to set up an experiment.")
+    def get_or_create_experiment(self,
+                                 name,
+                                 metrics,
+                                 description=None,
+                                 dataset=None,
+                                 dataset_parameters=None,
+                                 **kwargs):
 
         r = self.session.get(
-            url='{}/api/algos/?experiment={}'.format(
-                self.BASE_URL, self.experiment.id)
+            url='{}/api/experiments/?owner={}&name={}'.format(self.BASE_URL, self.username, name)
         )
-        if r.status_code != 200:
-            raise BenderError("Error: {}".format(r.content))
-
-        print("\nAlgo list")
-        name = self.algo.name if self.algo else ""
-        for algo in r.json()["results"]:
-            print("  -{} {}: {}".format(
-                ">" if algo["name"] == name else "",
-                algo["name"],
-                algo['id']))
+        if r.status_code == 200 and r.json()["count"] == 1:
+            self.set_experiment(r.json()["results"][0]["id"])
+        else:
+            self.new_experiment(name,
+                                metrics,
+                                description=None,
+                                dataset=None,
+                                dataset_parameters=None,
+                                **kwargs)
 
     def set_algo(self, algo_id):
         r = self.session.get(
@@ -190,6 +211,16 @@ class Bender():
         self.set_algo(r.json()["id"])
         if self.algo.is_search_space_defined is False:
             print("Search space is not defined properly. Suggestion won't work.")
+
+    def get_or_create_algo(self, name, parameters, description=None, **kwargs):
+
+        r = self.session.get(
+            url='{}/api/algo/?experiment={}&name={}'.format(self.BASE_URL, self.experiment.id, name)
+        )
+        if r.status_code == 200 and r.json()["count"] == 1:
+            self.set_experiment(r.json()["results"]["id"])
+        else:
+            self.new_experiment(name, parameters, description=None, **kwargs)
 
     def suggest(self, metric, is_loss, optimizer="parzen_estimator"):
         if self.algo is None:
