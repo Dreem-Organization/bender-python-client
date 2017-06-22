@@ -118,8 +118,8 @@ class Bender():
                 url='{}/api/experiments/?owner={}&name={}'.format(
                     self.BASE_URL,
                     self.username,
-                    name
-                ).replace(" ", "%20")
+                    name.replace(" ", "%20")
+                )
             )
             if r.status_code != 200 or r.json()["count"] != 1:
                 raise BenderError('Could not retrieve experiment.')
@@ -178,7 +178,10 @@ class Bender():
                                  **kwargs):
 
         r = self.session.get(
-            url='{}/api/experiments/?owner={}&name={}'.format(self.BASE_URL, self.username, name)
+            url='{}/api/experiments/?owner={}&name={}'.format(self.BASE_URL,
+                                                              self.username,
+                                                              name.replace(" ", "%20")
+                                                              )
         )
         if r.status_code == 200 and r.json()["count"] == 1:
             self.set_experiment(r.json()["results"][0]["id"])
@@ -234,7 +237,11 @@ class Bender():
     def get_or_create_algo(self, name, parameters, description=None, **kwargs):
 
         r = self.session.get(
-            url='{}/api/algo/?experiment={}&name={}'.format(self.BASE_URL, self.experiment.id, name)
+            url='{}/api/algo/?experiment={}&name={}'.format(
+                self.BASE_URL,
+                self.experiment.id,
+                name.replace(" ", "%20")
+            )
         )
         if r.status_code == 200 and r.json()["count"] == 1:
             self.set_experiment(r.json()["results"]["id"])
