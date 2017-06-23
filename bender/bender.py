@@ -244,7 +244,7 @@ class Bender():
             )
         )
         if r.status_code == 200 and r.json()["count"] == 1:
-            self.set_algo(r.json()["results"]["id"])
+            self.set_algo(r.json()["results"][0]["id"])
         else:
             self.new_algo(name, parameters, description=None, **kwargs)
 
