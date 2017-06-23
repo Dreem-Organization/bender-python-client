@@ -237,7 +237,7 @@ class Bender():
     def get_or_create_algo(self, name, parameters, description=None, **kwargs):
 
         r = self.session.get(
-            url='{}/api/algo/?experiment={}&name={}'.format(
+            url='{}/api/algos/?experiment={}&name={}'.format(
                 self.BASE_URL,
                 self.experiment.id,
                 name.replace(" ", "%20")
