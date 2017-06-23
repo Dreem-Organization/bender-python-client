@@ -165,7 +165,7 @@ class Bender():
         )
 
         if r.status_code == 201:
-            self.set_experiment(r.json()["id"])
+            self.set_experiment(experiment_id=r.json()["id"])
         else:
             raise BenderError('Failed to create experiment: {}'.format(r.content))
 
@@ -184,7 +184,7 @@ class Bender():
                                                               )
         )
         if r.status_code == 200 and r.json()["count"] == 1:
-            self.set_experiment(r.json()["results"][0]["id"])
+            self.set_experiment(experiment_id=r.json()["results"][0]["id"])
         else:
             self.new_experiment(name,
                                 metrics,
@@ -201,7 +201,7 @@ class Bender():
             raise BenderError('Could not retrieve algo.')
         data = r.json()
         if self.experiment is None or data["experiment"] != self.experiment.id:
-            self.set_experiment(data["experiment"])
+            self.set_experiment(experiment_id=data["experiment"])
         self.algo = Algo(**r.json())
 
     def delete_algo(self, algo_id):
@@ -371,7 +371,7 @@ class Bender():
             raise BenderError('Could not retrieve trial.')
         data = r.json()
         if self.experiment is None or data["experiment"] != self.experiment.id:
-            self.set_experiment(data["experiment"])
+            self.set_experiment(experiment_id=data["experiment"])
         self.trial = Trial(**r.json())
 
     def delete_trial(self, trial_id):
@@ -465,7 +465,7 @@ if __name__ == "__main__":
     token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InZ0b3RvIiwiZXhwIjoxNTAxMTcyODc5LCJlbWFpbCI6InZhbGVudGluQHJ5dGhtLmNvIiwidXNlcl9pZCI6MTB9.lruHE-kxjsaaPEnJCXCYz84vYaNgfav3UczIMf33ms0"
     bender = Bender(token)
     bender.list_experiments()
-    bender.set_experiment("066ca930-8e4d-4ce7-a142-77088a403347")
+    bender.set_experiment(experiment_id="066ca930-8e4d-4ce7-a142-77088a403347")
     bender.list_experiments()
     bender.list_algos()
     bender.set_algo("9106820f-5da0-4ad9-8eb0-8f951d09f05d")
