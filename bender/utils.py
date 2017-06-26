@@ -16,7 +16,6 @@ def remove_saved_token():
 
 
 def load_and_check_token(url):
-
     with open(token_path(), 'r') as f:
         token = json.load(f)
 

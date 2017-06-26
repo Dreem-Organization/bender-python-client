@@ -1,8 +1,8 @@
 from .utils import new_api_session, remove_saved_token
+import urllib
 
 
-class Bender():
-
+class Bender:
     """
     Main class for bender
 
@@ -34,7 +34,8 @@ class Bender():
     def __repr__(self):
         return "Bending Unit {}".format(self.user_id)
 
-    def _say_hello(self):
+    @staticmethod
+    def _say_hello():
         return "Bite my shinny metal ass!"
 
     def __init__(self, algo_id=None, experiment_id=None):
@@ -118,7 +119,7 @@ class Bender():
                 url='{}/api/experiments/?owner={}&name={}'.format(
                     self.BASE_URL,
                     self.username,
-                    name.replace(" ", "%20")
+                    urllib.parse.quote(name)
                 )
             )
             if r.status_code != 200 or r.json()["count"] != 1:
@@ -180,17 +181,18 @@ class Bender():
         r = self.session.get(
             url='{}/api/experiments/?owner={}&name={}'.format(self.BASE_URL,
                                                               self.username,
-                                                              name.replace(" ", "%20")
+                                                              urllib.parse.quote(name)
                                                               )
         )
+
         if r.status_code == 200 and r.json()["count"] == 1:
             self.set_experiment(experiment_id=r.json()["results"][0]["id"])
         else:
             self.new_experiment(name,
                                 metrics,
-                                description=None,
-                                dataset=None,
-                                dataset_parameters=None,
+                                description=description,
+                                dataset=dataset,
+                                dataset_parameters=dataset_parameters,
                                 **kwargs)
 
     def set_algo(self, algo_id):
@@ -240,13 +242,13 @@ class Bender():
             url='{}/api/algos/?experiment={}&name={}'.format(
                 self.BASE_URL,
                 self.experiment.id,
-                name.replace(" ", "%20")
+                urllib.parse.quote(name)
             )
         )
         if r.status_code == 200 and r.json()["count"] == 1:
             self.set_algo(r.json()["results"][0]["id"])
         else:
-            self.new_algo(name, parameters, description=None, **kwargs)
+            self.new_algo(name, parameters, description=description, **kwargs)
 
     def suggest(self, metric, is_loss, optimizer="parzen_estimator"):
         if self.algo is None:
@@ -428,7 +430,7 @@ class Experiment():
         return str(self.name)
 
 
-class Algo():
+class Algo:
     """ Algo class for Bender """
 
     def __init__(self, id, name, experiment, parameters, description, is_search_space_defined, **kwargs):
@@ -442,7 +444,7 @@ class Algo():
         return str(self.name)
 
 
-class Trial():
+class Trial:
     """ Trial class for bender """
 
     def __init__(self, parameters, results, comment, id, **kwargs):
@@ -461,7 +463,6 @@ class BenderError(Exception):
 
 
 if __name__ == "__main__":
-
     token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InZ0b3RvIiwiZXhwIjoxNTAxMTcyODc5LCJlbWFpbCI6InZhbGVudGluQHJ5dGhtLmNvIiwidXNlcl9pZCI6MTB9.lruHE-kxjsaaPEnJCXCYz84vYaNgfav3UczIMf33ms0"
     bender = Bender(token)
     bender.list_experiments()
