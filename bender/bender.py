@@ -282,7 +282,16 @@ class Bender:
         if r.status_code != 200:
             raise BenderError("Error: {}".format(r.content))
 
-        return r.json()['results']
+        data = r.json()
+        results = data["results"]
+        while True:
+            if data["next"] is not None:
+                data = self.session.get(data["next"]).json()
+                results.extend(data["results"])
+            else:
+                break
+
+        return results
 
     def algo_list_k_best_trials(self, metric, is_loss, k=10, summary=True):
         if self.algo is None:
