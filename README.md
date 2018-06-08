@@ -183,6 +183,11 @@ bender = Bender(algo_id="62198422-0b79-4cae-a2a4-30969f147ad7")
 Once you have evaluated your model with a peculiar set of parameters you should register it
 with bender's trial.
 
+Possible optimizers are:
+- random
+- parzen_estimator
+- model_based_estimator
+
 Here is a complete scenario with previous experiment and algo:
 
 ```python
@@ -191,7 +196,7 @@ from bender import Bender
 
 bender = Bender(algo_id="62198422-0b79-4cae-a2a4-30969f147ad7")
 
-parameters = bender.suggest(metric="test_accuracy", is_loss=False)
+parameters = bender.suggest(metric="test_accuracy", is_loss=False, optimizer="model_based_estimator")
 
 test_accuracy, train_accuracy = my_function(data, parameters)
 
