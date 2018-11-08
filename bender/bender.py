@@ -357,34 +357,6 @@ class Bender:
 
         return results
 
-    def update_trial(self, trial_id, parameters, results, comment=None):
-        r = self.session.get(
-            url='{}/api/trials/{}/'.format(self.BASE_URL, trial_id),
-        )
-        if r.status_code != 200:
-            raise BenderError("Invalid trial_id")
-
-        r = self.session.patch(
-            url='{}/api/trials/{}/'.format(self.BASE_URL, trial_id),
-            json={
-                # 'algo': self.algo.id,
-                'parameters': parameters,
-                'results': results,
-                'comment': comment,
-            },
-        )
-
-    def set_trial(self, trial_id):
-        r = self.session.get(
-            url='{}/api/trials/{}/'.format(self.BASE_URL, trial_id),
-        )
-        if r.status_code != 200:
-            raise BenderError('Could not retrieve trial.')
-        data = r.json()
-        if self.experiment is None or data["experiment"] != self.experiment.id:
-            self.set_experiment(experiment_id=data["experiment"])
-        self.trial = Trial(**r.json())
-
     def delete_trial(self, trial_id):
         r = self.session.delete(
             url='{}/api/trials/{}/'.format(self.BASE_URL, trial_id)
@@ -394,7 +366,7 @@ class Bender:
         else:
             print("trial deleted!")
 
-    def new_trial(self, results, parameters, comment=None, **kwargs):
+    def new_trial(self, results, parameters, weight=1, comment=None, **kwargs):
         if self.algo is None:
             raise BenderError("Set an algo.")
 
@@ -405,6 +377,7 @@ class Bender:
                 'parameters': parameters,
                 'results': results,
                 'comment': comment,
+                'weight': 1,
             },
         )
 
