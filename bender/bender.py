@@ -150,10 +150,7 @@ class Bender:
                        dataset_parameters=None,
                        **kwargs):
         if type(metrics) != list:
-            if type(metrics) == str:
-                metrics = [metrics]
-            else:
-                raise BenderError("Need to give a list of metrics: e.g: ['metric_1', 'metric_2']")
+            raise BenderError("Need to give a list of metrics: e.g: ['metric_1', 'metric_2']")
 
         r = self.session.post(
             url='{}/api/experiments/'.format(self.BASE_URL),
@@ -250,11 +247,11 @@ class Bender:
         else:
             self.new_algo(name, parameters, description=description, **kwargs)
 
-    def suggest(self, metric, is_loss, optimizer="parzen_estimator"):
+    def suggest(self, metric, optimizer="parzen_estimator"):
         if self.algo is None:
             raise BenderError("Set experiment!")
 
-        if metric not in self.experiment.metrics:
+        if any(len(m["metric_name"]) == metric for m in self.experiment.metrics):
             raise BenderError("Metrics need to be in {}".format(self.experiment.metrics))
 
         if self.algo.is_search_space_defined is False:
@@ -264,7 +261,6 @@ class Bender:
             url='{}/api/algos/{}/suggest/'.format(self.BASE_URL, self.algo.id),
             json={
                 'metric': metric,
-                'is_loss': is_loss,
                 'optimizer': optimizer,
             }
         )
@@ -297,7 +293,7 @@ class Bender:
         if self.algo is None:
             raise BenderError("You need to set up an algo.")
 
-        if metric not in self.experiment.metrics:
+        if any(len(m["metric_name"]) == metric for m in self.experiment.metrics):
             raise BenderError("Metrics need to be in {}".format(self.experiment.metrics))
 
         r = self.session.get(
@@ -329,7 +325,7 @@ class Bender:
         if self.experiment is None:
             raise BenderError("You need to set up an experiment.")
 
-        if metric not in self.experiment.metrics:
+        if any(len(m["metric_name"]) == metric for m in self.experiment.metrics):
             raise BenderError("Metrics need to be in {}".format(self.experiment.metrics))
 
         r = self.session.get(

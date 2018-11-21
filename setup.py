@@ -2,14 +2,23 @@
 from setuptools import setup, find_packages
 import bender
 
+import setuptools
+
+with open("README.md", "r") as fh:
+    long_description = fh.read()
+
 setup(
-   name='Bender',
+   name='bender-client',
    version=bender.__version__,
    packages=find_packages(),
-   author_email='benjamin@rythm.co',
+   author="Dreem",
+   author_email='valentin@dreem.com',
    description='Bender Python Client',
-   long_description=open('README.md').read(),
-   install_requires=['requests', ],
-   include_package_data=True,
-   url='https://github.com/Dreem-Devices/Bender-Client',
+   long_description=long_description,
+   long_description_content_type="text/markdown",
+   url="https://bender.dreem.com",
+   install_requires=[
+      'requests==2.20.1',
+      'python-jose==3.0.1',
+   ],
 )
