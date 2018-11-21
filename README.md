@@ -1,6 +1,7 @@
 # Bender Client for Python
 
 > :bar_chart: You can see a quick online demo of the project [HERE](https://bender.dreem.com/demo).
+
 > :warning: To understand Bender's relative vocabulary as "An Experiment" or "An Algorithm", please refer to the online documentation of the project [HERE](https://bender.dreem.com/eat-my-shiny-metal-doc).
 
 ## Setup
@@ -13,6 +14,8 @@
 > Let's use the famous MNIST example where we try to recognize handwritten digits in images.
 
 The code of the algorithm using [PyTorch](https://pytorch.org/) is the following :
+
+> To use this example, do not forget to ``` pip install numpy torch torchvision ``` .
 
 ```python
 from  __future__  import print_function
@@ -275,6 +278,8 @@ bender.new_trial(
 6. **The full code put together**
 
 > *Psssssst... The magic starts at line 443... ;)*
+
+> To use this example, do not forget to ``` pip install numpy torch torchvision bender-client ``` .
 
 ```python
 from  __future__  import print_function
