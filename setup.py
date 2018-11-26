@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from setuptools import setup, find_packages
-import bender
+import benderclient
 
 import setuptools
 
@@ -9,7 +9,7 @@ with open("README.md", "r") as fh:
 
 setup(
    name='bender-client',
-   version=bender.__version__,
+   version=benderclient.__version__,
    packages=find_packages(),
    author="Dreem",
    author_email='valentin@dreem.com',

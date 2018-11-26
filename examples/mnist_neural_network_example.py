@@ -5,7 +5,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
 from torchvision import datasets, transforms
-from bender import Bender
+from benderclient import Bender
 bender = Bender()
 
 class Net(nn.Module):

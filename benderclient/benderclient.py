@@ -364,14 +364,3 @@ class BenderError(Exception):
         return self.error
 
 
-if __name__ == "__main__":
-    token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InZ0b3RvIiwiZXhwIjoxNTAxMTcyODc5LCJlbWFpbCI6InZhbGVudGluQHJ5dGhtLmNvIiwidXNlcl9pZCI6MTB9.lruHE-kxjsaaPEnJCXCYz84vYaNgfav3UczIMf33ms0"
-    bender = Bender(token)
-    bender.list_experiments()
-    bender.set_experiment(experiment_id="066ca930-8e4d-4ce7-a142-77088a403347")
-    bender.list_experiments()
-    bender.list_algos()
-    bender.set_algo("9106820f-5da0-4ad9-8eb0-8f951d09f05d")
-    bender.list_experiments()
-    bender.list_algos()
-    bender.new_trial(results={"loss": 2}, parameters={"param1": 1, "param2": 2})
