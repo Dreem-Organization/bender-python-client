@@ -289,7 +289,6 @@ import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
 from torchvision import datasets, transforms
-from pathlib import Path
 from bender import Bender
 bender = Bender()
 
@@ -374,94 +373,84 @@ def run(epochs=3, lr=0.01, momentum=0.5, dropout=True, activation="relu", kernel
   return accuracy
 
 def init_bender():
-  global bender
-  if Path("./.benderconf").is_file() is False:
-    with open("./.benderconf", "w+") as config:
-      bender.new_experiment(
+    global bender
+    bender.create_experiment(
         name='MNIST Classification',
         description='Simple image classification on handwritten digits',
         metrics=[{"metric_name": "algorithm_accuracy", "type": "reward"}],
         dataset='MNIST'
-      )
-      experiment = bender.experiment.id
-      bender.new_algo(
+    )
+    bender.create_algo(
         name='PyTorch_NN',
-        parameters= [
-          {
-            "name": 'kernel_size',
-            "category": "categorical",
-            "search_space": {
-              "values": [3, 5, 7],
+        hyper_parameters= [
+            {
+                "name": 'kernel_size',
+                "category": "categorical",
+                "search_space": {
+                    "values": [3, 5, 7],
+                },
             },
-          },
-          {
-            "name": 'conv_depth',
-            "category": "uniform",
-            "search_space": {
-              "low": 1,
-              "high": 100,
-              "step": 1,
+            {
+                "name": 'conv_depth',
+                "category": "uniform",
+                "search_space": {
+                    "low": 1,
+                    "high": 100,
+                    "step": 1,
+                },
             },
-          },
-          {
-            "name": 'linear_depth',
-            "category": "uniform",
-            "search_space": {
-              "low": 1,
-              "high": 100,
-              "step": 1,
+            {
+                "name": 'linear_depth',
+                "category": "uniform",
+                "search_space": {
+                    "low": 1,
+                    "high": 100,
+                    "step": 1,
+                },
             },
-          },
-          {
-            "name": 'epochs',
-            "category": "uniform",
-            "search_space": {
-              "low": 1,
-              "high": 4,
-              "step": 1,
+            {
+                "name": 'epochs',
+                "category": "uniform",
+                "search_space": {
+                    "low": 1,
+                    "high": 4,
+                    "step": 1,
+                },
             },
-          },
-          {
-            "name": 'lr',
-            "category": "loguniform",
-            "search_space": {
-              "low": 1e-5,
-              "high": 1e-1,
-              "step": 1e-6,
+            {
+                "name": 'lr',
+                "category": "loguniform",
+                "search_space": {
+                    "low": 1e-5,
+                    "high": 1e-1,
+                    "step": 1e-6,
+                },
             },
-          },
-          {
-            "name": 'momentum',
-            "category": "uniform",
-            "search_space": {
-              "low": 0,
-              "high": 1,
-              "step": 0.05,
+            {
+                "name": 'momentum',
+                "category": "uniform",
+                "search_space": {
+                    "low": 0,
+                    "high": 1,
+                    "step": 0.05,
+                },
             },
-          },
-          {
-            "name": 'dropout',
-            "category": "categorical",
-            "search_space": {
-              "values": [True, False],
+            {
+                "name": 'dropout',
+                "category": "categorical",
+                "search_space": {
+                    "values": [True, False],
+                },
             },
-          },
-          {
-            "name": 'activation',
-            "category": "categorical",
-            "search_space": {
-              "values": ["relu", "softmax", "sigmoid", "tanh"],
+            {
+                "name": 'activation',
+                "category": "categorical",
+                "search_space": {
+                    "values": ["relu", "softmax", "sigmoid", "tanh"],
+                },
             },
-          },
         ]
-      )
-      algo = bender.algo.id
-      data=config.write(experiment + "\r\n" + algo)
-      config.close()
-  else:
-    with open("./.benderconf", "r") as config:
-      data=config.readlines()
-      bender = Bender(algo_id=data[1])
+    )
 
 if  __name__  ==  '__main__':
   # Create experiment and algo if they don't exist yet. Else, load them from the config file ./.benderconf
@@ -481,8 +470,8 @@ if  __name__  ==  '__main__':
       linear_depth=suggestion["linear_depth"],
     )
     # Feed Bender a Trial, AKA => suggestion + result
-    bender.new_trial(
-      parameters=suggestion,
+    bender.create_trial(
+      hyper_parameters=suggestion,
       results={"algorithm_accuracy": result}
     )
     print('New trial sent -----------------------------------------------------\n\n')
