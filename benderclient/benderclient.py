@@ -34,7 +34,7 @@ class Bender:
 
         experiment_list = []
         for experiment in r.json()["results"]:
-            experiment_list.push({"name": experiment["name"], "id": experiment["id"]})
+            experiment_list.append({"name": experiment["name"], "id": experiment["id"]})
         return experiment_list
 
     def set_experiment(self, name=None, experiment_id=None):
@@ -146,7 +146,7 @@ class Bender:
         
         algo_list = []
         for algo in r.json()["results"]:
-            algo_list.push({"name": algo["name"], "id": algo["id"]})
+            algo_list.append({"name": algo["name"], "id": algo["id"]})
         return algo_list
 
     def set_algo(self, name=None, algo_id=None):
