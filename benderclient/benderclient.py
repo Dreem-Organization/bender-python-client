@@ -143,7 +143,7 @@ class Bender:
         )
         if r.status_code != 200:
             raise BenderError("Error: {}".format(r.content))
-        
+
         algo_list = []
         for algo in r.json()["results"]:
             algo_list.append({"name": algo["name"], "id": algo["id"]})
@@ -177,8 +177,8 @@ class Bender:
         if self.experiment is None or data["experiment"] != self.experiment.id:
             self.set_experiment(experiment_id=data["experiment"])
         self.algo = Algo(**r.json())
-    
-    def create_algo(self, name, hyper_parameters, description=None, **kwargs):
+
+    def create_algo(self, name, hyperparameters, description=None, **kwargs):
         if self.experiment is None:
             raise BenderError("Set experiment!")
 
@@ -199,7 +199,7 @@ class Bender:
                 json={
                     'name': name,
                     'description': description,
-                    'parameters': hyper_parameters,
+                    'parameters': hyperparameters,
                     'experiment': self.experiment.id
                 }
             )
@@ -209,7 +209,7 @@ class Bender:
             self.set_algo(r.json()["id"])
             if self.algo.is_search_space_defined is False:
                 print("Search space is not defined properly. Suggestion won't work.")
-            
+
     def get_algo(self):
         return self.algo
 
@@ -264,7 +264,7 @@ class Bender:
 
         return results
 
-    def create_trial(self, results, hyper_parameters, weight=1, comment=None, **kwargs):
+    def create_trial(self, results, hyperparameters, weight=1, comment=None, **kwargs):
         if self.algo is None:
             raise BenderError("Set an algo.")
 
@@ -272,7 +272,7 @@ class Bender:
             url='{}/api/trials/'.format(self.BASE_URL),
             json={
                 'algo': self.algo.id,
-                'parameters': hyper_parameters,
+                'parameters': hyperparameters,
                 'results': results,
                 'comment': comment,
                 'weight': 1,
@@ -290,7 +290,7 @@ class Bender:
             raise BenderError("Error: {}".format(r.content))
         else:
             print("Trial deleted!")
-    
+
     def suggest(self, metric, optimizer="parzen_estimator"):
         if self.algo is None:
             raise BenderError("Set experiment!")

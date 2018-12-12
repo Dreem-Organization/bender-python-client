@@ -104,9 +104,9 @@ def run(epochs=3, lr=0.01, momentum=0.5, dropout=True, activation="relu", kernel
   return accuracy
 
 if  __name__  ==  '__main__':
-  # HYPER PARAMETERS (That's what bender is interested in)
+  # HYPERpARAMETERS (That's what bender is interested in)
   # Here we select them on our own in an arbitrary way
-  hyper_parameters = {
+  hyperparameters = {
     "kernel_size": 5,
     "epochs": 3,
     "lr": 0.05,
@@ -117,14 +117,14 @@ if  __name__  ==  '__main__':
     "linear_depth": 50,
   }
   run(
-    epochs=hyper_parameters["epochs"],
-    lr=hyper_parameters["lr"],
-    momentum=hyper_parameters["momentum"],
-    dropout=hyper_parameters["dropout"],
-    activation=hyper_parameters["activation"],
-    kernel_size=hyper_parameters["kernel_size"],
-    conv_depth=hyper_parameters["conv_depth"],
-    linear_depth=hyper_parameters["linear_depth"],
+    epochs=hyperparameters["epochs"],
+    lr=hyperparameters["lr"],
+    momentum=hyperparameters["momentum"],
+    dropout=hyperparameters["dropout"],
+    activation=hyperparameters["activation"],
+    kernel_size=hyperparameters["kernel_size"],
+    conv_depth=hyperparameters["conv_depth"],
+    linear_depth=hyperparameters["linear_depth"],
   )
 ```
 
@@ -231,13 +231,13 @@ bender.new_algo(
   ]
 )
 ```
- 
-4. **Get an Hyper Parameters Set suggestion from Bender**
 
-> *The whole goal of what we did up there is to use Bender to get a new set of Hyper Parameters to try according to the settings of your Experiment and Algo.*
- 
+4. **Get an Hyperparameters Set suggestion from Bender**
+
+> *The whole goal of what we did up there is to use Bender to get a new set of Hyperparameters to try according to the settings of your Experiment and Algo.*
+
 ```python
-suggestion = bender.suggest() 
+suggestion = bender.suggest()
 
 # suggestion would for example contain something like :
 {
@@ -254,7 +254,7 @@ suggestion = bender.suggest()
 
 5. **Feed a Trial to Bender**
 
-> *A Trial is simply an attempt of you trying a Hyper Parameters Set with your algorithm associated with the result metrics obtained. If you want bender to improve over time, feed him every trial you make.*
+> *A Trial is simply an attempt of you trying a Hyperparameters Set with your algorithm associated with the result metrics obtained. If you want bender to improve over time, feed him every trial you make.*
 
 ```python
 bender.new_trial(
@@ -379,7 +379,7 @@ def init_bender():
     )
     bender.create_algo(
         name='PyTorch_NN',
-        hyper_parameters= [
+        hyperparameters= [
             {
                 "name": 'kernel_size',
                 "category": "categorical",
@@ -453,7 +453,7 @@ if  __name__  ==  '__main__':
   # Create experiment and algo if they don't exist yet. Else, load them from the config file ./.benderconf
   init_bender()
   while True:
-    # Get a set of Hyper Parameters to test
+    # Get a set of Hyperparameters to test
     suggestion = bender.suggest(metric="algorithm_accuracy")
     # Get algo result with them
     result = run(
@@ -468,7 +468,7 @@ if  __name__  ==  '__main__':
     )
     # Feed Bender a Trial, AKA => suggestion + result
     bender.create_trial(
-      hyper_parameters=suggestion,
+      hyperparameters=suggestion,
       results={"algorithm_accuracy": result}
     )
     print('New trial sent -----------------------------------------------------\n\n')
