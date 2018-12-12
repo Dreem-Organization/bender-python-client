@@ -1,7 +1,5 @@
 # Bender Client for Python
 
-> :bar_chart: You can see a quick online demo of the project [HERE](https://bender.dreem.com/demo).
-
 > :warning: The full **DOCUMENTATION** on bender-python-client can be found [HERE](https://bender-optimizer.readthedocs.io/en/latest/documentation/python.html).
 
 ## Setup
