@@ -290,7 +290,6 @@ import torch.nn.functional as F
 import torch.optim as optim
 from torchvision import datasets, transforms
 from benderclient import Bender
-bender = Bender()
 
 class Net(nn.Module):
   def __init__(self, dropout=True, activation="relu", kernel_size=5, conv_depth=10, linear_depth=50):
@@ -373,7 +372,7 @@ def run(epochs=3, lr=0.01, momentum=0.5, dropout=True, activation="relu", kernel
   return accuracy
 
 def init_bender():
-    global bender
+    bender = Bender()
     bender.create_experiment(
         name='MNIST Classification',
         description='Simple image classification on handwritten digits',
