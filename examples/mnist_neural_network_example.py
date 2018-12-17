@@ -6,7 +6,6 @@ import torch.nn.functional as F
 import torch.optim as optim
 from torchvision import datasets, transforms
 from benderclient import Bender
-bender = Bender()
 
 class Net(nn.Module):
   def __init__(self, dropout=True, activation="relu", kernel_size=5, conv_depth=10, linear_depth=50):
@@ -89,7 +88,7 @@ def run(epochs=3, lr=0.01, momentum=0.5, dropout=True, activation="relu", kernel
   return accuracy
 
 def init_bender():
-    global bender
+    bender = Bender()
     bender.create_experiment(
         name='MNIST Classification',
         description='Simple image classification on handwritten digits',
@@ -98,7 +97,7 @@ def init_bender():
     )
     bender.create_algo(
         name='PyTorch_NN',
-        hyper_parameters= [
+        hyperparameters= [
             {
                 "name": 'kernel_size',
                 "category": "categorical",
@@ -167,12 +166,13 @@ def init_bender():
             },
         ]
     )
+    return bender
 
 if  __name__  ==  '__main__':
   # Create experiment and algo if they don't exist yet. Else, load them from the config file ./.benderconf
-  init_bender()
+  bender = init_bender()
   while True:
-    # Get a set of Hyper Parameters to test
+    # Get a set of Hyperparameters to test
     suggestion = bender.suggest(metric="algorithm_accuracy")
     # Get algo result with them
     result = run(
@@ -187,7 +187,7 @@ if  __name__  ==  '__main__':
     )
     # Feed Bender a Trial, AKA => suggestion + result
     bender.create_trial(
-      hyper_parameters=suggestion,
+      hyperparameters=suggestion,
       results={"algorithm_accuracy": result}
     )
     print('New trial sent -----------------------------------------------------\n\n')
