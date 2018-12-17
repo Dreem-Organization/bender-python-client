@@ -38,13 +38,13 @@ class BenderTest(unittest.TestCase):
         print("-> Creating algo...")
         bender.create_algo(
             name=alg,
-            hyper_parameters=[{"name": "NA","category": "categorical", "search_space": { "values": [3, 5, 7] } }],
+            hyperparameters=[{"name": "NA","category": "categorical", "search_space": { "values": [3, 5, 7] } }],
             description='NA'
         )
         print("-> Creating same algo...")
         bender.create_algo(
             name=alg,
-            hyper_parameters=[{"name": "NA","category": "categorical", "search_space": { "values": [3, 5, 7] } }],
+            hyperparameters=[{"name": "NA","category": "categorical", "search_space": { "values": [3, 5, 7] } }],
             description='NA'
         )
     
@@ -63,7 +63,7 @@ class BenderTest(unittest.TestCase):
         print("-> Creating trial...")
         bender.create_trial(
             results={'a': 1},
-            hyper_parameters={'NA': 3},
+            hyperparameters={'NA': 3},
             comment='NA'
         )
     
