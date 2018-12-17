@@ -7,7 +7,7 @@ class Bender:
     BASE_URL = 'https://bender-api.dreem.com'
 
     def __repr__(self):
-        return "Bending Unit {}".format(self.user_id)
+        return "Bending Unit #{}".format(self.user_id)
 
     @staticmethod
     def _say_hello():
@@ -107,7 +107,7 @@ class Bender:
     def get_experiment(self):
         return self.experiment
 
-    def delete_experiment(self, name=None, experiment_id=None):
+    def delete_experiment(self, experiment_id=None):
         if experiment_id is not None:
             r = self.session.delete(
                 url='{}/api/experiments/{}/'.format(self.BASE_URL, experiment_id)
@@ -115,23 +115,11 @@ class Bender:
             if r.status_code != 204:
                 raise BenderError("Error: {}".format(r.content))
             else:
-                print("Experiment deleted!")
-
-        elif name is not None:
-            r = self.session.delete(
-                url='{}/api/experiments/?owner={}&name={}'.format(
-                    self.BASE_URL,
-                    self.username,
-                    urllib.parse.quote(name)
-                )
-            )
-            if r.status_code != 204:
-                raise BenderError("Error: {}".format(r.content))
-            else:
+                self.experiment = None
                 print("Experiment deleted!")
 
         else:
-            raise BenderError("Provide a name or experiment_id!")
+            raise BenderError("Provide an experiment_id!")
 
     def list_algos(self):
         if self.experiment is None:
@@ -176,11 +164,11 @@ class Bender:
 
         if self.experiment is None or data["experiment"] != self.experiment.id:
             self.set_experiment(experiment_id=data["experiment"])
-        self.algo = Algo(**r.json())
+        self.algo = Algo(**data)
     
     def create_algo(self, name, hyper_parameters, description=None, **kwargs):
         if self.experiment is None:
-            raise BenderError("Set experiment!")
+            raise BenderError("Set an experiment first!")
 
         r = self.session.get(
             url='{}/api/algos/?experiment={}&name={}'.format(
@@ -191,7 +179,7 @@ class Bender:
         )
 
         if r.status_code == 200 and r.json()["count"] == 1:
-            self.set_algo(algo_id=r.json()["results"][0]["id"])
+            self.set_algo(name=name)
             print("Algo already exist with that name and is now set as the current algo.")
         else:
             r = self.session.post(
@@ -205,43 +193,28 @@ class Bender:
             )
 
             if r.status_code != 201:
-                raise BenderError('Failed to create experiment: {}'.format(r.content))
-            self.set_algo(r.json()["id"])
+                raise BenderError('Failed to create algo: {}'.format(r.content))
+            self.set_algo(algo_id=r.json()["id"])
             if self.algo.is_search_space_defined is False:
                 print("Search space is not defined properly. Suggestion won't work.")
             
     def get_algo(self):
         return self.algo
 
-    def delete_algo(self, name=None, algo_id=None):
-        r = None
+    def delete_algo(self, algo_id=None):
         if algo_id is not None:
             r = self.session.delete(
             url='{}/api/algos/{}/'.format(self.BASE_URL, algo_id),
             )
-            if r.status_code != 200:
-                raise BenderError('Could not retrieve algo.')
-            data = r.json()
-
-        elif name is not None:
-            r = self.session.delete(
-                url='{}/api/algos/?experiment={}&name={}'.format(
-                    self.BASE_URL,
-                    self.experiment.id,
-                    urllib.parse.quote(name)
-                )
-            )
-            if r.status_code != 200 or r.json()["count"] != 1:
-                raise BenderError('Could not retrieve algo.')
-            data = r.json()["results"][0]
-
+            if r.status_code != 204:
+                raise BenderError("Error: {}".format(r.content))
+            else:
+                self.algo = None
+                print("Algo deleted!")
         else:
-            raise BenderError("Provide a name or algo_id!")
+            raise BenderError("Provide an algo_id!")
 
-        if r.status_code != 204:
-            raise BenderError("Error: {}".format(r.content))
-        else:
-            print("algo deleted!")
+        
 
     def list_trials(self):
         if self.algo is None:
@@ -282,18 +255,27 @@ class Bender:
         if r.status_code != 201:
             raise BenderError('Failed to create trial: {}'.format(r.content))
 
-    def delete_trial(self, trial_id):
-        r = self.session.delete(
-            url='{}/api/trials/{}/'.format(self.BASE_URL, trial_id)
-        )
-        if r.status_code != 204:
-            raise BenderError("Error: {}".format(r.content))
+    def delete_trial(self, trial_id=None):
+        if trial_id is not None:
+            r = self.session.delete(
+                url='{}/api/trials/{}/'.format(self.BASE_URL, trial_id)
+            )
+            if r.status_code != 204:
+                raise BenderError("Error: {}".format(r.content))
+            else:
+                print("Trial deleted!")
         else:
-            print("Trial deleted!")
+            raise BenderError("Provide a trial_id!")
     
-    def suggest(self, metric, optimizer="parzen_estimator"):
+    def suggest(self, metric=None, optimizer="parzen_estimator"):
+        if self.experiment is None:
+            raise BenderError("Set an experiment first!")
+
         if self.algo is None:
-            raise BenderError("Set experiment!")
+            raise BenderError("Set an algo first!")
+
+        if metric is None:
+            raise BenderError("Please indicate a metric to optimize!")
 
         if any(len(m["metric_name"]) == metric for m in self.experiment.metrics):
             raise BenderError("Metrics need to be in {}".format(self.experiment.metrics))
@@ -339,7 +321,7 @@ class Experiment():
         self.dataset_parameters = dataset_parameters
 
     def __repr__(self):
-        return str(self.name)
+        return str(self)
 
 
 class Algo:
@@ -353,7 +335,7 @@ class Algo:
         self.is_search_space_defined = is_search_space_defined
 
     def __repr__(self):
-        return str(self.name)
+        return str(self)
 
 
 class BenderError(Exception):

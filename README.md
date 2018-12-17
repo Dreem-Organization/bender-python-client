@@ -134,7 +134,7 @@ if  __name__  ==  '__main__':
 
  1. **Importing Bender**
 ```python
-from bender import Bender
+from benderclient import Bender
 bender = Bender()
 ```
 

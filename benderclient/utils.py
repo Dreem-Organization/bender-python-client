@@ -49,9 +49,9 @@ def save_token(token):
 def retrieve_token_and_username(url, cpt=0):
     """ Tries to load credentials from disk and prompt the user for it. """
     if sys.version_info.major == 3:
-        email = input('\nPlease enter your email\n')
+        email = input('\n[Bender client]\nPlease enter your email\n')
     else:
-        email = raw_input('\nPlease enter your email\n')
+        email = raw_input('\n[ * Bender client * ]\nPlease enter your email\n')
     password = getpass.getpass()
 
     request_login = requests.post("{}/login/".format(url), json={
