@@ -448,10 +448,11 @@ def init_bender():
             },
         ]
     )
+    return bender
 
 if  __name__  ==  '__main__':
   # Create experiment and algo if they don't exist yet. Else, load them from the config file ./.benderconf
-  init_bender()
+  bender = init_bender()
   while True:
     # Get a set of Hyperparameters to test
     suggestion = bender.suggest(metric="algorithm_accuracy")
