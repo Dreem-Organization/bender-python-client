@@ -1,5 +1,11 @@
 from .utils import new_api_session, remove_saved_token
 import urllib
+import sys
+
+if sys.version_info[0] < 3:
+    url_parse = urllib.pathname2url
+else:
+    url_parse = urllib.parse.quote
 
 
 class Bender:
@@ -52,7 +58,7 @@ class Bender:
                 url='{}/api/experiments/?owner={}&name={}'.format(
                     self.BASE_URL,
                     self.username,
-                    urllib.parse.quote(name)
+                    url_parse(name)
                 )
             )
             if r.status_code != 200 or r.json()["count"] != 1:
@@ -78,7 +84,7 @@ class Bender:
         r = self.session.get(
             url='{}/api/experiments/?owner={}&name={}'.format(self.BASE_URL,
                                                               self.username,
-                                                              urllib.parse.quote(name)
+                                                              url_parse(name)
                                                               )
         )
 
@@ -152,7 +158,7 @@ class Bender:
                 url='{}/api/algos/?experiment={}&name={}'.format(
                     self.BASE_URL,
                     self.experiment.id,
-                    urllib.parse.quote(name)
+                    url_parse(name)
                 )
             )
             if r.status_code != 200 or r.json()["count"] != 1:
@@ -174,7 +180,7 @@ class Bender:
             url='{}/api/algos/?experiment={}&name={}'.format(
                 self.BASE_URL,
                 self.experiment.id,
-                urllib.parse.quote(name)
+                url_parse(name)
             )
         )
 
