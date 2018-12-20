@@ -6,7 +6,7 @@ with open("README.md", "r") as fh:
 
 setup(
     name='bender-client',
-    version="0.3.1.3",
+    version="0.3.2.0",
     packages=["benderclient"],
     author="Dreem",
     author_email='valentin@dreem.com',
