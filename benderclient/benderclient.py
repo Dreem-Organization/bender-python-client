@@ -73,7 +73,7 @@ class Bender:
         dataset=None,
         dataset_parameters=None,
         **kwargs
-        ):
+    ):
 
         r = self.session.get(
             url='{}/api/experiments/?owner={}&name={}'.format(self.BASE_URL,
@@ -141,7 +141,7 @@ class Bender:
         r = None
         if algo_id is not None:
             r = self.session.get(
-            url='{}/api/algos/{}/'.format(self.BASE_URL, algo_id),
+                url='{}/api/algos/{}/'.format(self.BASE_URL, algo_id),
             )
             if r.status_code != 200:
                 raise BenderError('Could not retrieve algo.')
@@ -165,7 +165,7 @@ class Bender:
         if self.experiment is None or data["experiment"] != self.experiment.id:
             self.set_experiment(experiment_id=data["experiment"])
         self.algo = Algo(**data)
-    
+
     def create_algo(self, name, hyperparameters, description=None, **kwargs):
         if self.experiment is None:
             raise BenderError("Set an experiment first!")
@@ -204,7 +204,7 @@ class Bender:
     def delete_algo(self, algo_id=None):
         if algo_id is not None:
             r = self.session.delete(
-            url='{}/api/algos/{}/'.format(self.BASE_URL, algo_id),
+                url='{}/api/algos/{}/'.format(self.BASE_URL, algo_id),
             )
             if r.status_code != 204:
                 raise BenderError("Error: {}".format(r.content))
@@ -213,8 +213,6 @@ class Bender:
                 print("Algo deleted!")
         else:
             raise BenderError("Provide an algo_id!")
-
-        
 
     def list_trials(self):
         if self.algo is None:
@@ -266,7 +264,7 @@ class Bender:
                 print("Trial deleted!")
         else:
             raise BenderError("Provide a trial_id!")
-    
+
     def suggest(self, metric=None, optimizer="parzen_estimator"):
         if self.experiment is None:
             raise BenderError("Set an experiment first!")
