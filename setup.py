@@ -1,12 +1,13 @@
 # -*- coding: utf-8 -*-
 from setuptools import setup
+import benderclient
 
 with open("README.md", "r") as fh:
     long_description = fh.read()
 
 setup(
     name='bender-client',
-    version="0.3.2.0",
+    version=benderclient.__version__,
     packages=["benderclient"],
     author="Dreem",
     author_email='valentin@dreem.com',
