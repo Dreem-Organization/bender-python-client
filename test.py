@@ -3,8 +3,9 @@ import json
 from benderclient import Bender
 bender = Bender()
 
-exp='pre-comit-test-script-experiment'
-alg='pre-comit-test-script-algo'
+exp = 'pre-comit-test-script-experiment'
+alg = 'pre-comit-test-script-algo'
+
 
 class BenderTest(unittest.TestCase):
     def test_a_create_experiment(self):
@@ -33,32 +34,34 @@ class BenderTest(unittest.TestCase):
         bender.set_experiment(name=bender.get_experiment().name)
         print("-> Set experiment by id...")
         bender.set_experiment(experiment_id=bender.get_experiment().id)
-    
+
     def test_d_create_algo(self):
         print("-> Creating algo...")
         bender.create_algo(
             name=alg,
-            hyperparameters=[{"name": "NA","category": "categorical", "search_space": { "values": [3, 5, 7] } }],
+            hyperparameters=[{"name": "NA", "category": "categorical",
+                              "search_space": {"values": [3, 5, 7]}}],
             description='NA'
         )
         print("-> Creating same algo...")
         bender.create_algo(
             name=alg,
-            hyperparameters=[{"name": "NA","category": "categorical", "search_space": { "values": [3, 5, 7] } }],
+            hyperparameters=[{"name": "NA", "category": "categorical",
+                              "search_space": {"values": [3, 5, 7]}}],
             description='NA'
         )
-    
+
     def test_d_list_algos(self):
         print("-> Listing Algos...")
         algos = bender.list_algos()
-        self.assertEqual(type(algos), list) 
+        self.assertEqual(type(algos), list)
 
     def test_e_set_algo(self):
         print("-> Set algo by name...")
         bender.set_algo(name=bender.get_algo().name)
         print("-> Set algo by id...")
         bender.set_algo(algo_id=bender.get_algo().id)
-    
+
     def test_f_create_trial(self):
         print("-> Creating trial...")
         bender.create_trial(
@@ -66,12 +69,12 @@ class BenderTest(unittest.TestCase):
             hyperparameters={'NA': 3},
             comment='NA'
         )
-    
+
     def test_g_list_trials(self):
         print("-> Listing Trials...")
         trials = bender.list_trials()
-        self.assertEqual(type(trials), list) 
-    
+        self.assertEqual(type(trials), list)
+
     def test_h_suggest(self):
         print("-> Getting suggestion...")
         bender.suggest(metric="a")
@@ -87,9 +90,11 @@ class BenderTest(unittest.TestCase):
     def test_k_delete_experiment(self):
         print("-> Delete experiment by id...")
         bender.delete_experiment(bender.get_experiment().id)
+
     def test_z(self):
         print("-> Hello Bender ! :)")
         print(bender._say_hello())
+
 
 if __name__ == '__main__':
     unittest.main()
