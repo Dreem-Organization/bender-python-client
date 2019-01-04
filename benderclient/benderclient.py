@@ -325,7 +325,7 @@ class Experiment():
         self.dataset_parameters = dataset_parameters
 
     def __repr__(self):
-        return str(self)
+        return str(self.name)
 
 
 class Algo:
@@ -339,7 +339,7 @@ class Algo:
         self.is_search_space_defined = is_search_space_defined
 
     def __repr__(self):
-        return str(self)
+        return str(self.name)
 
 
 class BenderError(Exception):
