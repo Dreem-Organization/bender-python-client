@@ -13,7 +13,7 @@ class Bender:
     BASE_URL = 'https://bender-api.dreem.com'
 
     def __repr__(self):
-        return "Bending Unit #{}".format(self.user_id)
+        return "Bender id #{}".format(self.user_id)
 
     def __init__(self, algo_id=None, experiment_id=None):
         self.session, self.username, self.user_id = new_api_session(url=self.BASE_URL)
