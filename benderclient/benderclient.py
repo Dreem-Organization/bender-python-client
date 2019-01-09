@@ -15,10 +15,6 @@ class Bender:
     def __repr__(self):
         return "Bending Unit #{}".format(self.user_id)
 
-    @staticmethod
-    def _say_hello():
-        return "Bite my shinny metal ass!"
-
     def __init__(self, algo_id=None, experiment_id=None):
         self.session, self.username, self.user_id = new_api_session(url=self.BASE_URL)
 
