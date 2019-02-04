@@ -9,13 +9,11 @@ else:
 
 
 class Bender:
-
-    BASE_URL = 'https://bender-api.dreem.com'
-
     def __repr__(self):
         return "Bender id #{}".format(self.user_id)
 
-    def __init__(self, algo_id=None, experiment_id=None):
+    def __init__(self, algo_id=None, experiment_id=None, host='https://bender-api.dreem.com'):
+        self.BASE_URL = host
         self.session, self.username, self.user_id = new_api_session(url=self.BASE_URL)
 
         self.algo = None
