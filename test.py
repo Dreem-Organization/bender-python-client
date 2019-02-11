@@ -91,10 +91,6 @@ class BenderTest(unittest.TestCase):
         print("-> Delete experiment by id...")
         bender.delete_experiment(bender.get_experiment().id)
 
-    def test_z(self):
-        print("-> Hello Bender ! :)")
-        print(bender._say_hello())
-
 
 if __name__ == '__main__':
     unittest.main()
