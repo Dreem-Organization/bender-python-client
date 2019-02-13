@@ -265,12 +265,15 @@ class Bender:
         else:
             raise BenderError("Provide a trial_id!")
 
-    def suggest(self, metric=None, optimizer="parzen_estimator"):
+    def suggest(self, metric=None, optimizer="parzen_estimator", minimum_observations=20):
         if self.experiment is None:
             raise BenderError("Set an experiment first!")
 
         if self.algo is None:
             raise BenderError("Set an algo first!")
+
+        if type(minimum_observations) != int:
+            raise BenderError("minimum_observations must be an int")
 
         if metric is None:
             raise BenderError("Please indicate a metric to optimize!")
@@ -286,6 +289,7 @@ class Bender:
             json={
                 'metric': metric,
                 'optimizer': optimizer,
+                'minimum_observations': minimum_observations,
             }
         )
         if r.status_code != 200:
