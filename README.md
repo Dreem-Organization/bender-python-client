@@ -143,7 +143,7 @@ bender = Bender()
  2. **Create an Experiment**
 > *An experiment is related to the problem you are trying to solve, here : MNIST classification*
 ```python
-bender.new_experiment(
+bender.create_experiment(
 	name='MNIST Classification',
 	description='Simple image classification on handwritten digits',
 	metrics=[
@@ -158,7 +158,7 @@ bender.new_experiment(
 3. **Create an Algo**
 > *An algo is simply corresponding to ONE solution to an Experiment problem : here it's as we saw a Neural Net with PyTorch*
 ```python
-bender.new_algo(
+bender.cerate_algo(
 	name='PyTorch_NN',
 	# The parameters below are actually the Hyper-Parameters of your algo described in a list
 	parameters= [
@@ -257,7 +257,7 @@ suggestion = bender.suggest()
 > *A Trial is simply an attempt of you trying a Hyperparameters Set with your algorithm associated with the result metrics obtained. If you want bender to improve over time, feed him every trial you make.*
 
 ```python
-bender.new_trial(
+bender.create_trial(
 	parameters={
     "kernel_size": 5,
 		"epochs": 3,
